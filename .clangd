@@ -1,0 +1,11 @@
+CompileFlags:
+  Remove:
+    - "--sysroot=*"
+    - "-isystem"
+    
+  Add:
+    - "--target=i686-elf"
+    - "-ffreestanding"
+    - "-nostdlib"
+    - "-Ikernel/include"
+    - "-Ilibc/include"
