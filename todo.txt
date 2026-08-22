@@ -4,5 +4,9 @@ kernel initialization: done
 tty: done
 better project structure : done (meaty skeleton from osdev.org)
 memory managment: in progress
+gdt: done
+idt: not implemented yet
+keyboard output: not implemented yet
+shell: not implemented yet
 
 

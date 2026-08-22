@@ -24,11 +24,14 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
   unsigned long ptindex = (unsigned long)virtualaddr >> 12 & 0x03FF;
 
   unsigned long *pd = (unsigned long *)0xFFFFF000;
-  // Here you need to check whether the PD entry is present.
-  // When it is not present, you need to create a new empty PT and
-  // adjust the PDE accordingly.
+
   if (!(pd[pdindex] & 0x01)) {
-    return; // for now just return to avoid crash
+    pd[pdindex] =
+        ((unsigned long)pmm_alloc_page()) | (flags & 0xFFF) | 0x01; // Present
+    unsigned long *pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
+    for (int i = 0; i < 1024; i++) {
+      pt[i] = 0; // Initialize the new page table entry to 0
+    }
   }
 
   unsigned long *pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
@@ -39,6 +42,24 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
 
   pt[ptindex] = ((unsigned long)physaddr) | (flags & 0xFFF) | 0x01; // Present
 
-  // Now you need to flush the entry in the TLB
-  // or you might not notice the change.
+  asm volatile("invlpg (%0)" ::"r"(virtualaddr) : "memory");
+}
+
+void unmap_page(void *virtualaddr) {
+  unsigned long pdindex = (unsigned long)virtualaddr >> 22;
+  unsigned long ptindex = (unsigned long)virtualaddr >> 12 & 0x03FF;
+
+  unsigned long *pd = (unsigned long *)0xFFFFF000;
+  if (!(pd[pdindex] & 0x1)) {
+    return; // Page directory entry not present
+  }
+
+  unsigned long *pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
+  if (!(pt[ptindex] & 0x1)) {
+    return; // page table entry not present
+  }
+
+  pt[ptindex] = 0; // Clear the page table entry
+
+  asm volatile("invlpg (%0)" ::"r"(virtualaddr) : "memory");
 }
