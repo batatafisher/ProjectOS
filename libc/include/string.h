@@ -16,6 +16,7 @@ void *memmove(void *, const void *, size_t);
 void *memset(void *, int, size_t);
 size_t strlen(const char *);
 void hex_to_string(uint32_t value, char *buffer);
+void int_to_str(int value, char *str);
 
 #ifdef __cplusplus
 }

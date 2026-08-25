@@ -1,6 +1,8 @@
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
+#include <kernel/klib.h>
 #include <kernel/mmu.h>
+#include <kernel/pic.h>
 #include <kernel/tty.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -70,12 +72,19 @@ void mmu_tests(void) {
 }
 
 void kernel_main(void) {
+  cli();
   init_gdt();
+  init_PIC(0x20, 0x28);
   init_idt();
   init_pmm();
   terminal_initialize();
+  IRQ_unmask(0);
+  IRQ_unmask(1);
+  __asm__ volatile("int $32");
+  __asm__ volatile("int $33");
+  sti();
 
   printf("%s  %s \n", kernel_buffer, happy);
 
-  mmu_tests();
+  // mmu_tests();
 }

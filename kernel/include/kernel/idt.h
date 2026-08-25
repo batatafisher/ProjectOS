@@ -18,11 +18,16 @@ typedef struct {
   uint32_t base;
 } __attribute__((packed)) idtr_t;
 
+typedef struct {
+  uint32_t error_code;
+  uint32_t eip;
+  uint32_t cs;
+  uint32_t eflags;
+} interrupt_frame_t;
+
 __attribute__((noreturn)) void exception_handler(void);
 
 void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
 void init_idt(void);
-
-extern void *isr_stub_table[];
 
 #endif

@@ -1,6 +1,8 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -68,6 +70,19 @@ int printf(const char *restrict format, ...) {
       size_t len = strlen(buffer);
       if (maxrem < len) {
         // TODO Set errno to EOVERFLOW
+        return -1;
+      }
+      if (!print(buffer, len))
+        return -1;
+      written += len;
+    } else if (*format == 'd') {
+      format++;
+      uint32_t value = va_arg(parameters, int);
+      char buffer[12];
+      int_to_str(value, buffer);
+      size_t len = strlen(buffer);
+      if (maxrem < len) {
+        // TODO: set errno to EOVERFLOW
         return -1;
       }
       if (!print(buffer, len))
