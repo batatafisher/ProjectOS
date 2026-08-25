@@ -34,9 +34,15 @@ MEMORY_OBJS=\
 memory/vmm.o \
 memory/pmm.o \
 
+DRIVERS_OBJS=\
+drivers/init_drivers.o \
+drivers/keyboard.o\
+
+
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
+$(DRIVERS_OBJS) \
 $(MEMORY_OBJS) \
 
 OBJS=\

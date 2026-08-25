@@ -3,9 +3,10 @@ bootloader: done (using grub)
 kernel initialization: done
 tty: done
 better project structure : done (meaty skeleton from osdev.org)
-memory managment: in progress
+memory managment: pmm and vmm finished only need a heap allocator
 gdt: done
-idt: not implemented yet
+idt: done
+interrupts: done
 keyboard output: not implemented yet
 shell: not implemented yet
 

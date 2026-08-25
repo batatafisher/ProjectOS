@@ -1,3 +1,4 @@
+#include <drivers/init_drivers.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/klib.h>
@@ -78,13 +79,16 @@ void kernel_main(void) {
   init_idt();
   init_pmm();
   terminal_initialize();
-  IRQ_unmask(0);
+
+  init_drivers();
   IRQ_unmask(1);
-  __asm__ volatile("int $32");
-  __asm__ volatile("int $33");
+  IRQ_mask(0);
   sti();
 
   printf("%s  %s \n", kernel_buffer, happy);
 
   // mmu_tests();
+  while (1) {
+    __asm__ volatile("hlt");
+  }
 }

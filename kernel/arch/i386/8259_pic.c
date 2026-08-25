@@ -74,7 +74,7 @@ void PIC_disable(void) {
   outb(PIC2_DATA, 0xff);
 }
 
-void IRQ_unmask(uint8_t IRQline) {
+void IRQ_mask(uint8_t IRQline) {
   uint16_t port;
   uint8_t value;
 
@@ -88,7 +88,7 @@ void IRQ_unmask(uint8_t IRQline) {
   outb(port, value);
 }
 
-void IRQ_mask(uint8_t IRQline) {
+void IRQ_unmask(uint8_t IRQline) {
   uint16_t port;
   uint8_t value;
 
