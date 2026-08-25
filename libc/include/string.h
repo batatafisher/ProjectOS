@@ -17,6 +17,8 @@ void *memset(void *, int, size_t);
 size_t strlen(const char *);
 void hex_to_string(uint32_t value, char *buffer);
 void int_to_str(int value, char *str);
+char *strcpy(char *dest, const char *source);
+int strcmp(const char *s1, const char *s2);
 
 #ifdef __cplusplus
 }

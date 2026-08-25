@@ -38,12 +38,16 @@ DRIVERS_OBJS=\
 drivers/init_drivers.o \
 drivers/keyboard.o\
 
+SHELL_OBJS=\
+shell/shell.o \
+
 
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
 $(DRIVERS_OBJS) \
 $(MEMORY_OBJS) \
+$(SHELL_OBJS) \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

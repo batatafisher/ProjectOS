@@ -1,5 +1,6 @@
 #include <drivers/keyboard.h>
 #include <kernel/klib.h>
+#include <kernel/shell.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -53,8 +54,9 @@ void keyboard_handler() {
   int scan_code = inb(0x60);
   if (scan_code <= 0x80) {
     char c = kbdus[scan_code];
-    if (c == 0) {
-      return;
+    if (c != 0) {
+      printf("%c", c);
+      shell_buffer(c);
     }
   }
 }

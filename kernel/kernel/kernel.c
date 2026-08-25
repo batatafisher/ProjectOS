@@ -4,6 +4,7 @@
 #include <kernel/klib.h>
 #include <kernel/mmu.h>
 #include <kernel/pic.h>
+#include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -79,7 +80,7 @@ void kernel_main(void) {
   init_idt();
   init_pmm();
   terminal_initialize();
-
+  init_shell();
   init_drivers();
   IRQ_unmask(1);
   IRQ_mask(0);
@@ -89,6 +90,8 @@ void kernel_main(void) {
 
   // mmu_tests();
   while (1) {
+    if (shell_command_ready)
+      printf("%s", shell());
     __asm__ volatile("hlt");
   }
 }
