@@ -1,4 +1,6 @@
+#include "commands/commands.h"
 #include <kernel/shell.h>
+#include <kernel/tty.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,6 +10,17 @@ static size_t buffer_len;
 static char response[256];
 
 volatile int shell_command_ready = 0;
+
+// The array of all your shell commands
+shell_command_t command_registry[] = {
+    {.name = "echo",
+     .description = "Prints text back to the terminal",
+     .command = echo},
+    {.name = "end"},
+};
+
+// A quick trick to let your shell know exactly how many commands exist
+int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 
 void clear_shell_buffer() {
   buffer[0] = '\0';
@@ -46,8 +59,21 @@ char *shell() {
   int argc = split_shell_command(buffer, argv, 16);
   if (argc == 0)
     strcpy(response, "ERROR: no command was provided\n");
+  else {
+    int i = 0;
+    while (strcmp(argv[0], command_registry[i].name) != 0) {
+      i++;
+      if (strcmp(command_registry[i].name, "end") == 0) {
+        strcpy(response, argv[0]);
+        strcat(response, ": command not found\n");
+        clear_shell_buffer();
+        return response;
+      }
+    }
+    strcpy(response, command_registry[i].command(argv + 1, argc - 1));
+  }
   clear_shell_buffer();
-  return response;
+  return strcat(response, "\n");
 }
 
 void shell_buffer(char c) {

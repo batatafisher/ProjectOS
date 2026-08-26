@@ -19,6 +19,7 @@ void hex_to_string(uint32_t value, char *buffer);
 void int_to_str(int value, char *str);
 char *strcpy(char *dest, const char *source);
 int strcmp(const char *s1, const char *s2);
+char *strcat(char *dest, const char *source);
 
 #ifdef __cplusplus
 }

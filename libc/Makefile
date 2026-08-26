@@ -42,6 +42,7 @@ string/hex_to_string.o \
 string/int_to_str.o \
 string/strcmp.o \
 string/strcpy.o \
+string/strcat.o \
 
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \

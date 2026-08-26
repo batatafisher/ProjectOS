@@ -79,7 +79,7 @@ void kernel_main(void) {
   init_PIC(0x20, 0x28);
   init_idt();
   init_pmm();
-  terminal_initialize();
+  init_tty();
   init_shell();
   init_drivers();
   IRQ_unmask(1);

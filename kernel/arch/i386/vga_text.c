@@ -1,9 +1,7 @@
 #include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
-#include <kernel/tty.h>
+#include <arch/i386/vga_text.h>
 
 #include "vga.h"
 
@@ -57,13 +55,4 @@ void terminal_putchar(char c) {
     if (++terminal_row == VGA_HEIGHT)
       terminal_row = 0;
   }
-}
-
-void terminal_write(const char *data, size_t size) {
-  for (size_t i = 0; i < size; i++)
-    terminal_putchar(data[i]);
-}
-
-void terminal_writestring(const char *data) {
-  terminal_write(data, strlen(data));
 }
