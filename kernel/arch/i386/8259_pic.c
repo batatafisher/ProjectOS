@@ -27,6 +27,34 @@
 
 #define CASCADE_IRQ 2
 
+void IRQ_mask(uint8_t IRQline) {
+  uint16_t port;
+  uint8_t value;
+
+  if (IRQline < 8) {
+    port = PIC1_DATA;
+  } else {
+    port = PIC2_DATA;
+    IRQline -= 8;
+  }
+  value = inb(port) | (1 << IRQline);
+  outb(port, value);
+}
+
+void IRQ_unmask(uint8_t IRQline) {
+  uint16_t port;
+  uint8_t value;
+
+  if (IRQline < 8) {
+    port = PIC1_DATA;
+  } else {
+    port = PIC2_DATA;
+    IRQline -= 8;
+  }
+  value = inb(port) & ~(1 << IRQline);
+  outb(port, value);
+}
+
 /*
 arguments:
         offset1 - vector offset for master PIC
@@ -60,6 +88,10 @@ void init_PIC(int offset1, int offset2) { // more accuratly PIC_remap but for
   // Unmask both PICs.
   outb(PIC1_DATA, 0);
   outb(PIC2_DATA, 0);
+
+  // unmasking relevel IRQs
+  IRQ_unmask(1);
+  IRQ_unmask(0);
 }
 
 void PIC_sendEOI(uint8_t irq) {
@@ -72,32 +104,4 @@ void PIC_sendEOI(uint8_t irq) {
 void PIC_disable(void) {
   outb(PIC1_DATA, 0xff);
   outb(PIC2_DATA, 0xff);
-}
-
-void IRQ_mask(uint8_t IRQline) {
-  uint16_t port;
-  uint8_t value;
-
-  if (IRQline < 8) {
-    port = PIC1_DATA;
-  } else {
-    port = PIC2_DATA;
-    IRQline -= 8;
-  }
-  value = inb(port) | (1 << IRQline);
-  outb(port, value);
-}
-
-void IRQ_unmask(uint8_t IRQline) {
-  uint16_t port;
-  uint8_t value;
-
-  if (IRQline < 8) {
-    port = PIC1_DATA;
-  } else {
-    port = PIC2_DATA;
-    IRQline -= 8;
-  }
-  value = inb(port) & ~(1 << IRQline);
-  outb(port, value);
 }

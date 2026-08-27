@@ -36,7 +36,8 @@ memory/pmm.o \
 
 DRIVERS_OBJS=\
 drivers/init_drivers.o \
-drivers/keyboard.o\
+drivers/keyboard.o \
+drivers/pit.o \
 
 COMMANDS_OBJS=\
 shell/commands/echo.o \

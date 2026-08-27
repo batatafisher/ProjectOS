@@ -1,5 +1,6 @@
 #include "bad_apple_frames.h" // Your massive 13MB header file!
 #include "commands.h"
+#include <drivers/pit.h>
 #include <stdint.h>
 
 const char *badapple(char **argv, int argc) {
@@ -12,12 +13,7 @@ const char *badapple(char **argv, int argc) {
     for (int i = 0; i < 2000; i++) {
       vga_memory[i] = (color << 8) | bad_apple_frames[frame][i];
     }
-
-    // TODO: We need a sleep() function here!
-    // Right now, the CPU will render all 6500 frames in 0.2 seconds.
-    for (volatile int wait = 0; wait < 10000000; wait++) {
-      // Terrible temporary hack to slow down the CPU
-    }
+    sleep(33);
   }
   return "";
 }

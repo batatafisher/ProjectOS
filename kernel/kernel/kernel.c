@@ -82,9 +82,8 @@ void kernel_main(void) {
   init_pmm();
   init_tty();
   init_shell();
-  init_drivers();
-  IRQ_unmask(1);
-  IRQ_mask(0);
+  init_drivers(1000);
+
   sti();
 
   printf("%s  %s \n", kernel_buffer, happy);
