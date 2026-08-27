@@ -76,10 +76,14 @@ char *shell() {
 void shell_buffer(char c) {
   if (c == '\b' && buffer_len != 0)
     buffer[--buffer_len] = '\0';
+
   else if (c == '\n') {
     shell_command_ready = 1;
-  } else if (buffer_len < sizeof(buffer) - 1) {
+  }
+
+  else if (buffer_len < sizeof(buffer) - 1) {
     buffer[buffer_len++] = c;
     buffer[buffer_len] = '\0';
   }
+  putchar(c);
 }
