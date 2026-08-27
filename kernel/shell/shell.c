@@ -1,4 +1,5 @@
 #include "commands/commands.h"
+#include <input/keyboard.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stddef.h>
@@ -19,7 +20,10 @@ shell_command_t command_registry[] = {
     {.name = "badapple",
      .description =
          "plays bad apple frames in ascii format directly in the terminal",
-     .command = badapple}};
+     .command = badapple},
+    {.name = "clear",
+     .description = "clears the terminal screen",
+     .command = clear}};
 
 int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 
@@ -55,9 +59,9 @@ int split_shell_command(char *str, char *args[], int max_args) {
   return argc;
 }
 
-char *shell() {
+char *shell(char *command) {
   char *argv[16];
-  int argc = split_shell_command(buffer, argv, 16);
+  int argc = split_shell_command(command, argv, 16);
   if (argc == 0)
     strcpy(response, "ERROR: no command was provided");
   else {
@@ -90,4 +94,21 @@ void shell_buffer(char c) {
     buffer[buffer_len] = '\0';
   }
   putchar(c);
+}
+
+int once = 1;
+void run_shell() {
+  if (once) {
+    printf("ProjectOS> ");
+    once = 0;
+  }
+  char c = keyboard_dequeue();
+  while (c != 0) {
+    shell_buffer(c);
+    c = keyboard_dequeue();
+  }
+  if (shell_command_ready) {
+    printf("%s", shell(buffer));
+    printf("ProjectOS> ");
+  }
 }

@@ -1,6 +1,7 @@
 #include "bad_apple_frames.h" // Your massive 13MB header file!
 #include "commands.h"
 #include <drivers/pit.h>
+#include <kernel/shell.h>
 #include <stdint.h>
 
 const char *badapple(char **argv, int argc) {
@@ -15,5 +16,6 @@ const char *badapple(char **argv, int argc) {
     }
     sleep(33);
   }
+  shell("clear");
   return "";
 }

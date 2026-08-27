@@ -90,14 +90,7 @@ void kernel_main(void) {
 
   // mmu_tests();
   while (1) {
-
-    char c = keyboard_dequeue();
-    while (c != 0) {
-      shell_buffer(c);
-      c = keyboard_dequeue();
-    }
-    if (shell_command_ready)
-      printf("%s", shell());
+    run_shell();
     __asm__ volatile("hlt");
   }
 }

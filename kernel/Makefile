@@ -42,6 +42,7 @@ drivers/pit.o \
 COMMANDS_OBJS=\
 shell/commands/echo.o \
 shell/commands/badapple.o \
+shell/commands/clear.o \
 
 SHELL_OBJS=\
 $(COMMANDS_OBJS)\

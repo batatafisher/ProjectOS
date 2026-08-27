@@ -9,5 +9,6 @@ typedef struct {
 
 const char *echo(char *args[], int argc);
 const char *badapple(char *args[], int argc);
+const char *clear(char *args[], int argc);
 
 #endif

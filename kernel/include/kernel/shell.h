@@ -3,7 +3,8 @@
 
 void shell_buffer(char c);
 void init_shell();
-char *shell();
+char *shell(char *command);
+void run_shell();
 
 extern volatile int shell_command_ready;
 
