@@ -9,12 +9,10 @@ typedef struct {
   void (*initialize)(void);
 } tty_driver_t;
 
-tty_driver_t vga_text_driver = {
-    .putchar = terminal_putchar,
-    .set_color = terminal_setcolor,
-    .initialize = terminal_initialize,
-    // .clear = terminal_clear_screen
-};
+tty_driver_t vga_text_driver = {.putchar = terminal_putchar,
+                                .set_color = terminal_setcolor,
+                                .initialize = terminal_initialize,
+                                .clear = clear_terminal};
 
 tty_driver_t *active_tty = &vga_text_driver;
 
@@ -26,5 +24,7 @@ void terminal_write(const char *data, size_t size) {
 void terminal_writestring(const char *data) {
   terminal_write(data, strlen(data));
 }
+
+void clear_screen() { active_tty->clear(); }
 
 void init_tty() { active_tty->initialize(); }

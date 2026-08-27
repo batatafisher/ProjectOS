@@ -91,6 +91,7 @@ void kernel_main(void) {
 
   // mmu_tests();
   while (1) {
+
     char c = keyboard_dequeue();
     while (c != 0) {
       shell_buffer(c);

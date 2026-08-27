@@ -1,3 +1,4 @@
+#include <arch/i386/faults_handler.h>
 #include <kernel/idt.h>
 
 #define IDT_MAX_DESCRIPTORS 256
@@ -22,8 +23,12 @@ void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
   descriptor->reserved = 0;
 }
 
-void exception_handler() {
-  __asm__ volatile("cli; hlt"); // Completely hangs the computer
+void exception_handler(interrupt_frame_t *frame) {
+  if (frame->interrupt_number == 14) {
+    page_fault(frame);
+  } else {
+    general_fault_handler(frame);
+  }
 }
 
 void init_idt() {

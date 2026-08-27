@@ -1,12 +1,25 @@
 %macro isr_err_stub 1
 isr_stub_%+%1:
+    push %1
+    pusha
+    push esp
     call exception_handler
+    popa
+    add esp, 4
+    add esp, 8
     iret 
 %endmacro
 ; if writing for 64-bit, use iretq instead
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
+    push 0
+    push %1
+    pusha
+    push esp
     call exception_handler
+    popa
+    add esp, 4
+    add esp, 8
     iret
 %endmacro
 

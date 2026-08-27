@@ -56,3 +56,20 @@ void terminal_putchar(char c) {
       terminal_row = 0;
   }
 }
+
+void clear_terminal() {
+  // Point directly to the VGA text buffer
+  uint16_t *vga_memory = (uint16_t *)0xC00B8000;
+
+  // Pre-calculate the blank character with the current terminal color
+  uint16_t blank = (terminal_color << 8) | ' ';
+
+  // Blast the entire screen with blanks instantly
+  for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+    vga_memory[i] = blank;
+  }
+
+  // Reset the internal cursor coordinates
+  terminal_column = 0;
+  terminal_row = 0;
+}
