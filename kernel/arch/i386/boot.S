@@ -25,51 +25,58 @@ stack_top:
 .align 4096
 page_directory:
     .space 4096
-table_768:
-    .space 4096
+page_tables:
+    .space 16384 # 4 contiguous page tables (4 * 4096) for 16MB
 
 # The kernel entry point.
 .section .text
 .global _start
 .type _start, @function
 _start:
-	movl $(stack_top - OFFSET), %esp
+    movl $(stack_top - OFFSET), %esp
   
-  # initializing paging before calling the kernel
-  movl $0, %eax #mov eax, 0
-  movl $0, %ebx #mov ebx, 0
+  # 1. Map 16MB (4096 pages) into our page tables
+  movl $0, %eax # eax = page index (0 to 4095)
+  movl $0, %ebx # ebx = physical address
 
   1:
-    movl %ebx, %ecx #mov ecx, ebx
-    orl $3, %ecx #or ecx, 3
-    
-    # table_768[eax] = ecx
-    movl %ecx, (table_768 - OFFSET)(,%eax,4)
-    
-    incl %eax #inc eax
-    addl $4096, %ebx # add ebx, 4096
-    cmpl $1024, %eax # cmp eax, 1024
+    movl %ebx, %ecx
+    orl $3, %ecx
+    movl %ecx, (page_tables - OFFSET)(,%eax,4)
+    incl %eax
+    addl $4096, %ebx
+    cmpl $4096, %eax # 4096 * 4KB = 16MB
     jne 1b
 
-  movl $(table_768 - OFFSET), %eax
-  orl $3, %eax
+  # 2. Link all 4 tables into the Page Directory
+  movl $0, %eax # eax = table index (0 to 3)
+  
+  2:
+    movl %eax, %ecx
+    imull $4096, %ecx
+    addl $(page_tables - OFFSET), %ecx
+    orl $3, %ecx # Present + Read/Write
     
-  # Slot 0
-  movl %eax, (page_directory - OFFSET)
-  # Slot 768 (768 * 4 = 3072)
-  movl %eax, (page_directory - OFFSET) + 3072
+    # Identity Map (Slots 0 to 3)
+    movl %ecx, (page_directory - OFFSET)(,%eax,4)
+    # Higher Half Map (Slots 768 to 771 -> 768 * 4 = 3072)
+    movl %ecx, (page_directory - OFFSET + 3072)(,%eax,4)
     
-  # make the last PDE point to the page directory and load page_directory into cr3
+    incl %eax
+    cmpl $4, %eax
+    jne 2b
+    
+  # 3. Recursive mapping and cr3 load
   movl $(page_directory - OFFSET), %eax
   movl %eax, %cr3
-  orl $3, %eax # turn on last two bits which are for read/write permession, and present
+  orl $3, %eax 
   movl %eax, (page_directory - OFFSET) + 1023*4
 
   # Turn on Paging
   movl %cr0, %eax
   orl $0x80000001, %eax
-  movl %eax, %cr0
-  
+  movl %eax, %cr0 
+
   lea higher_half, %eax
   jmp *%eax
 

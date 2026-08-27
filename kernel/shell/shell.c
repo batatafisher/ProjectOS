@@ -15,7 +15,11 @@ volatile int shell_command_ready = 0;
 shell_command_t command_registry[] = {
     {.name = "echo",
      .description = "Prints text back to the terminal",
-     .command = echo}};
+     .command = echo},
+    {.name = "badapple",
+     .description =
+         "plays bad apple frames in ascii format directly in the terminal",
+     .command = badapple}};
 
 int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 

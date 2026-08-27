@@ -40,6 +40,7 @@ drivers/keyboard.o\
 
 COMMANDS_OBJS=\
 shell/commands/echo.o \
+shell/commands/badapple.o \
 
 SHELL_OBJS=\
 $(COMMANDS_OBJS)\
