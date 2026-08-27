@@ -45,6 +45,8 @@ SHELL_OBJS=\
 $(COMMANDS_OBJS)\
 shell/shell.o \
 
+INPUT_OBJS=\
+input/keyboard.o \
 
 TTY_OBJS=\
 tty/tty.o \
@@ -57,6 +59,7 @@ $(DRIVERS_OBJS) \
 $(MEMORY_OBJS) \
 $(SHELL_OBJS) \
 $(TTY_OBJS) \
+$(INPUT_OBJS) \
 
 OBJS=\
 $(ARCHDIR)/crti.o \

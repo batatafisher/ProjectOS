@@ -1,4 +1,5 @@
 #include <drivers/init_drivers.h>
+#include <input/keyboard.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/klib.h>
@@ -90,6 +91,11 @@ void kernel_main(void) {
 
   // mmu_tests();
   while (1) {
+    char c = keyboard_dequeue();
+    while (c != 0) {
+      shell_buffer(c);
+      c = keyboard_dequeue();
+    }
     if (shell_command_ready)
       printf("%s", shell());
     __asm__ volatile("hlt");
