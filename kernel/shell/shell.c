@@ -17,10 +17,10 @@ shell_command_t command_registry[] = {
     {.name = "echo",
      .description = "Prints text back to the terminal",
      .command = echo},
-    {.name = "badapple",
-     .description =
-         "plays bad apple frames in ascii format directly in the terminal",
-     .command = badapple},
+    //{.name = "badapple",
+    //.description =
+    //    "plays bad apple frames in ascii format directly in the terminal",
+    //.command = badapple},
     {.name = "clear",
      .description = "clears the terminal screen",
      .command = clear}};

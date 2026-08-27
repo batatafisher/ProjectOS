@@ -1,5 +1,6 @@
 #include <drivers/init_drivers.h>
 #include <input/keyboard.h>
+#include <kernel/ext2.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/klib.h>
@@ -89,7 +90,12 @@ void kernel_main(void) {
   printf("%s  %s \n", kernel_buffer, happy);
 
   // mmu_tests();
+  int once = 1;
   while (1) {
+    if (once) {
+      once = 0;
+      test_disk();
+    }
     run_shell();
     __asm__ volatile("hlt");
   }
