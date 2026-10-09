@@ -7,7 +7,9 @@ memory managment: pmm and vmm finished only need a heap allocator
 gdt: done
 idt: done
 interrupts: done
-keyboard output: not implemented yet
-shell: not implemented yet
+keyboard output: done
+badapple: under work
+shell: done for now only have (echo, clear, badapple) commands
+file system: under development (ext2)
 
 

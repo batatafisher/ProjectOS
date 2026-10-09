@@ -90,12 +90,9 @@ void kernel_main(void) {
   printf("%s  %s \n", kernel_buffer, happy);
 
   // mmu_tests();
-  int once = 1;
+  test_disk();
   while (1) {
-    if (once) {
-      once = 0;
-      test_disk();
-    }
+
     run_shell();
     __asm__ volatile("hlt");
   }

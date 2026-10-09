@@ -66,4 +66,12 @@ static inline void sti() {
 
 static inline void cli() { __asm__ volatile("cli"); }
 
+static inline int test_bit(int nr, const uint8_t *addr) {
+  return (addr[nr >> 3] & (1 << (nr & 7))) != 0;
+}
+
+static inline void set_bit(int nr, uint8_t *addr) {
+  addr[nr >> 3] |= (1 << (nr & 7));
+}
+
 #endif
