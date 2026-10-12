@@ -1,6 +1,8 @@
 #ifndef _KERNEL_EXT2_H
 #define _KERNEL_EXT2_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct __attribute__((packed)) {
@@ -134,6 +136,12 @@ typedef struct __attribute__((packed)) {
   uint8_t i_osd2[12];
 } ext2_inodes;
 
+typedef struct {
+  ext2_superblock sb;
+  ext2_blockgroup bg;
+  ext2_inodes root_inode;
+} ext2_filesystem;
+
 typedef struct __attribute__((packed)) {
   uint32_t inode;
   uint16_t rec_len;
@@ -142,6 +150,20 @@ typedef struct __attribute__((packed)) {
   char name[];
 } ext2_dir_entry;
 
+typedef struct {
+  uint32_t inode;
+  uint8_t file_type;
+  char name[256];
+} dir_info_t;
+
+struct file {
+  ext2_inodes inode;
+  uint32_t inode_num;
+  uint32_t offset;
+  uint32_t flags;
+  bool used;
+};
+
 void test_disk();
 
 _Static_assert(sizeof(ext2_superblock) == 1024, "Bad superblock size");
@@ -149,5 +171,15 @@ _Static_assert(sizeof(ext2_superblock) == 1024, "Bad superblock size");
 _Static_assert(sizeof(ext2_blockgroup) == 32, "Bad group descriptor size");
 
 _Static_assert(sizeof(ext2_inodes) == 128, "Bad inode size");
+
+void init_ext2();
+
+int create(const char *path);
+int write(int fd, const uint8_t *data, size_t size);
+int read(int fd, uint8_t *buffer, size_t size);
+int list_dir(const char *path, dir_info_t *out_entries, int max_entries);
+int unlink(const char *path);
+
+int open(const char *path, uint32_t flags);
 
 #endif

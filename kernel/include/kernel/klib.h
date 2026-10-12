@@ -74,4 +74,8 @@ static inline void set_bit(int nr, uint8_t *addr) {
   addr[nr >> 3] |= (1 << (nr & 7));
 }
 
+static inline void clear_bit(int nr, uint8_t *addr) {
+  addr[nr >> 3] &= ~(1 << (nr & 7));
+}
+
 #endif

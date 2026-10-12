@@ -84,6 +84,7 @@ void kernel_main(void) {
   init_tty();
   init_shell();
   init_drivers(1000);
+  init_ext2();
 
   sti();
 

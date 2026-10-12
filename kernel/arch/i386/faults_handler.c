@@ -30,7 +30,7 @@ void general_fault_handler(interrupt_frame_t *frame) {
   clear_screen();
 
   printf("KERNEL PANIC: I dont fucking know what happened but here are some "
-         "helpful numbers\n\n");
+         "helpful numbers\nGood luck bro.\n\n");
 
   printf("EIP (Instruction): 0x%x\n", frame->eip);
   printf("CR2 (Target Addr): 0x%x\n", faulting_address);
