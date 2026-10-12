@@ -34,26 +34,11 @@ const driverdata_t qemu_disk = {
 const driverdata_t *disk = &qemu_disk;
 
 int split_path(char *str, char *args[], int max_args) {
-  int argc = 0;
   char *p = str;
   if (*p == '/')
     p++;
-  while (*p != '\0' && argc < max_args) {
 
-    if (*p == '\0')
-      break;
-
-    args[argc++] = p;
-
-    while (*p != '\0' && *p != '/')
-      p++;
-
-    if (*p == '/') {
-      *p = '\0';
-      p++;
-    }
-  }
-  return argc;
+  return split_with(p, "/", args, max_args, 64);
 }
 
 void read_block(const unsigned int block_num, uint16_t *block) {
@@ -84,7 +69,7 @@ void read_inode(int inode_num, ext2_inodes *inode, ext2_superblock sb) {
 
   // Use cached group block for primary group 0, read disk otherwise
   if (group == 0) {
-    bg = fs.bg;
+    bg = fs.gdt;
   } else {
     read_groupblock(group, &bg);
   }
@@ -113,7 +98,7 @@ void write_inode(uint32_t inode_num, ext2_inodes *inode, ext2_superblock sb) {
   ext2_blockgroup bg;
 
   if (group == 0) {
-    bg = fs.bg;
+    bg = fs.gdt;
   } else {
     read_groupblock(group, &bg);
   }
@@ -141,15 +126,15 @@ void free_block(uint32_t block_num) {
 
   // 1. Read block bitmap directly using cached fs.bg
   uint16_t bitmap_buf[512];
-  read_block(fs.bg.bg_block_bitmap, bitmap_buf);
+  read_block(fs.gdt.bg_block_bitmap, bitmap_buf);
 
   // 2. Clear bit and write bitmap back to disk
   clear_bit(index, (uint8_t *)bitmap_buf);
-  write_block(fs.bg.bg_block_bitmap, bitmap_buf);
+  write_block(fs.gdt.bg_block_bitmap, bitmap_buf);
 
   // 3. Update cached group descriptor and write back Block 2
-  fs.bg.bg_free_blocks_count++;
-  write_block(2, (uint16_t *)&fs.bg);
+  fs.gdt.bg_free_blocks_count++;
+  write_block(2, (uint16_t *)&fs.gdt);
 }
 
 void free_inode(uint32_t inode_num) {
@@ -160,15 +145,15 @@ void free_inode(uint32_t inode_num) {
 
   // 1. Read inode bitmap directly using cached fs.bg
   uint16_t bitmap_buf[512];
-  read_block(fs.bg.bg_inode_bitmap, bitmap_buf);
+  read_block(fs.gdt.bg_inode_bitmap, bitmap_buf);
 
   // 2. Clear bit and write bitmap back to disk
   clear_bit(index, (uint8_t *)bitmap_buf);
-  write_block(fs.bg.bg_inode_bitmap, bitmap_buf);
+  write_block(fs.gdt.bg_inode_bitmap, bitmap_buf);
 
   // 3. Update cached group descriptor and write back Block 2
-  fs.bg.bg_free_inodes_count++;
-  write_block(2, (uint16_t *)&fs.bg);
+  fs.gdt.bg_free_inodes_count++;
+  write_block(2, (uint16_t *)&fs.gdt);
 }
 
 int lookup_dir(const char *name, ext2_inodes *inode, ext2_superblock sb) {
@@ -299,7 +284,7 @@ uint32_t allocate_block(ext2_superblock *sb) {
 
         // Keep cached Group Descriptor in memory in sync if group 0
         if (g == 0) {
-          fs.bg.bg_free_blocks_count--;
+          fs.gdt.bg_free_blocks_count--;
         }
 
         // Write back updated Block 2 safely
@@ -320,10 +305,7 @@ uint32_t allocate_inode(ext2_superblock *sb) {
                         sb->s_inodes_per_group;
 
   for (uint32_t g = 0; g < num_groups; g++) {
-    // 1. Read Block 2 (Group Descriptor Table)
-    read_block(2, block);
-    ext2_blockgroup *bg =
-        (ext2_blockgroup *)((uint8_t *)block + (sizeof(ext2_blockgroup) * g));
+    ext2_blockgroup *bg = &fs.gdt + (sizeof(ext2_blockgroup) * g);
 
     if (bg->bg_free_inodes_count == 0)
       continue;
@@ -344,7 +326,7 @@ uint32_t allocate_inode(ext2_superblock *sb) {
 
         // Keep cached Group Descriptor in memory in sync if group 0
         if (g == 0) {
-          fs.bg.bg_free_inodes_count--;
+          fs.gdt.bg_free_inodes_count--;
         }
 
         // Write back updated Block 2 safely
@@ -430,7 +412,7 @@ int resolve_path(const char *path, ext2_inodes *out_inode,
 
 void mount_ext2() {
   read_superblock(&fs.sb);
-  read_groupblock(0, &fs.bg);
+  read_groupblock(0, &fs.gdt);
   read_inode(2, &fs.root_inode, fs.sb);
 
   if (fs.sb.s_magic != 0xEF53) {
@@ -731,7 +713,7 @@ int unlink(const char *path) {
         read_inode(target_inode_num, &target_inode, fs.sb);
 
         // 1. Unlink directory entry from parent block
-        if (prev_entry) {
+        if (prev_entry != NULL) {
           prev_entry->rec_len += entry->rec_len;
         } else {
           entry->inode = 0;
@@ -814,21 +796,18 @@ int list_dir(const char *path, dir_info_t *out_entries, int max_entries) {
   return count; // Returns number of files found
 }
 
+int close(int fd) {
+  if (fd < 0 || fd >= MAX_FILES || !open_files[fd].used)
+    return ERROR_FILESYSTEM;
+
+  open_files[fd].used = false;
+  return NO_ERROR;
+}
+
 void test_disk() {
   printf("superblock: %d\n", sizeof(ext2_superblock));
   printf("group desc: %d\n", sizeof(ext2_blockgroup));
   printf("inode:      %d\n", sizeof(ext2_inodes));
-  dir_info_t entries[64];
-  int max_entries = 64;
-  int num = list_dir("/", entries, max_entries);
-  for (int i = 0; i < num; i++) {
-    printf("name = %s, file_type = %d\n", entries[i].name,
-           entries[i].file_type);
-  }
-  unlink("/hello.txt");
-  num = list_dir("/", entries, max_entries);
-  for (int i = 0; i < num; i++) {
-    printf("name = %s, file_type = %d\n", entries[i].name,
-           entries[i].file_type);
-  }
+  // fs.sb.s_magic = 0xEF53;
+  // write_block(1, (uint16_t *)&fs.sb);
 }

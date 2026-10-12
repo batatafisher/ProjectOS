@@ -20,6 +20,10 @@ void int_to_str(int value, char *str);
 char *strcpy(char *dest, const char *source);
 int strcmp(const char *s1, const char *s2);
 char *strcat(char *dest, const char *source);
+int strncmp(const char *s1, const char *s2, size_t n);
+char *strstr(const char *haystack, const char *needle);
+int split_with(const char *str, const char *delim, char *out[],
+               size_t max_tokens, size_t max_len);
 
 #ifdef __cplusplus
 }

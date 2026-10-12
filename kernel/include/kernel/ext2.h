@@ -1,6 +1,7 @@
 #ifndef _KERNEL_EXT2_H
 #define _KERNEL_EXT2_H
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -138,7 +139,7 @@ typedef struct __attribute__((packed)) {
 
 typedef struct {
   ext2_superblock sb;
-  ext2_blockgroup bg;
+  ext2_blockgroup gdt;
   ext2_inodes root_inode;
 } ext2_filesystem;
 
@@ -181,5 +182,6 @@ int list_dir(const char *path, dir_info_t *out_entries, int max_entries);
 int unlink(const char *path);
 
 int open(const char *path, uint32_t flags);
+int close(int fd);
 
 #endif
