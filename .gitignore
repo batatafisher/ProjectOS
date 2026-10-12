@@ -1,4 +1,6 @@
 *.iso
+*.img
+*.txt
 isodir
 sysroot
 compile_commands.json
