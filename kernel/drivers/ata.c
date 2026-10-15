@@ -1,6 +1,13 @@
 #include <drivers/ata.h>
 #include <kernel/klib.h>
 
+static bool ata_wait_ready(uint16_t dcr) {
+  for (uint32_t i = 0; i < 10000000; i++)
+    if (!(inb(dcr) & 0x88))
+      return true;
+  return false;
+}
+
 // do a singletasking PIO ata "software reset" with DCR
 void srst_ata_st(uint16_t dcr) {
   outb(dcr, 0x04); // do a "software reset" on the bus
@@ -64,7 +71,8 @@ data_rdy:
   // check if the low byte just turned 0 (more sectors to read?)
   if ((uint8_t)*sectors != 0)
     goto pior_l;
-
+  while (inb(port + 7) & 0x80) {
+  }
   return (inb(port + 7) & 0x21) == 0; // test the last status ERR bits
 }
 
@@ -117,7 +125,8 @@ data_rdy:
   // check if "sectorcount" just decremented to 0
   if ((uint16_t)*sectors != 0)
     goto pior_l;
-
+  while (inb(port + 7) & 0x80) {
+  }
   return (inb(port + 7) & 0x21) == 0;
 }
 
@@ -144,7 +153,7 @@ bool read_ata_st(int32_t *sectors, uint16_t **dest, driverdata_t *dd,
     return false;
 
   // check the bsy and drq bits -- both must be clear
-  if (inb(dd->dcr) & 0x88)
+  if (!ata_wait_ready(dd->dcr))
     return false;
 
   // if lba > 28bit or stlba > 28bit or total exceeds 28bit, use 48 bit
@@ -209,7 +218,8 @@ data_rdy:
   // check if the low byte just turned 0 (more sectors to write?)
   if ((uint8_t)*sectors != 0)
     goto pior_l;
-
+  while (inb(port + 7) & 0x80) {
+  }
   return (inb(port + 7) & 0x21) == 0; // test the last status ERR bits
 }
 
@@ -263,7 +273,8 @@ data_rdy:
   // check if "sectorcount" just decremented to 0
   if ((uint16_t)*sectors != 0)
     goto pior_l;
-
+  while (inb(port + 7) & 0x80) {
+  }
   return (inb(port + 7) & 0x21) == 0;
 }
 
@@ -288,7 +299,7 @@ bool write_ata_st(int32_t *sectors, const uint16_t **source, driverdata_t *dd,
     return false;
 
   // check the bsy and drq bits -- both must be clear
-  if (inb(dd->dcr) & 0x88)
+  if (!ata_wait_ready(dd->dcr))
     return false;
 
   // if lba > 28bit or stlba > 28bit or total exceeds 28bit, use 48 bit

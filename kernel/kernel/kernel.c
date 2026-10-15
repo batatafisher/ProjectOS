@@ -1,6 +1,6 @@
 #include <drivers/init_drivers.h>
+#include <fs/ext2.h>
 #include <input/keyboard.h>
-#include <kernel/ext2.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/klib.h>
@@ -84,14 +84,12 @@ void kernel_main(void) {
   init_tty();
   init_shell();
   init_drivers(1000);
-  init_ext2();
+  init_fs();
 
   sti();
 
   printf("%s  %s \n", kernel_buffer, happy);
 
-  // mmu_tests();
-  test_disk();
   while (1) {
 
     run_shell();

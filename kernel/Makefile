@@ -36,6 +36,7 @@ memory/pmm.o \
 
 FILESYSTEM_OBJS=\
 filesystem/ext2.o \
+filesystem/vfs.o \
 
 DRIVERS_OBJS=\
 drivers/init_drivers.o \
@@ -46,6 +47,7 @@ drivers/ata.o \
 COMMANDS_OBJS=\
 shell/commands/echo.o \
 shell/commands/clear.o \
+
 
 SHELL_OBJS=\
 $(COMMANDS_OBJS)\
