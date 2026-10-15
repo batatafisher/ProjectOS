@@ -17,7 +17,9 @@ int split_with(const char *str, const char *delim, char *out[],
     if (token_len >= max_len) {
       token_len = max_len - 1;
     }
-
+    if (!out[token_count]) {
+      return -1;
+    }
     // Copy directly into pre-allocated buffer pointer out[token_count]
     memcpy(out[token_count], cursor, token_len);
     out[token_count][token_len] = '\0';

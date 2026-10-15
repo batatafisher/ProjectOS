@@ -47,7 +47,11 @@ drivers/ata.o \
 COMMANDS_OBJS=\
 shell/commands/echo.o \
 shell/commands/clear.o \
-
+shell/commands/ls.o \
+shell/commands/cd.o \
+shell/commands/touch.o \
+shell/commands/pwd.o \
+shell/commands/mkdir.o \
 
 SHELL_OBJS=\
 $(COMMANDS_OBJS)\

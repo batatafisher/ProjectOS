@@ -10,6 +10,8 @@ static char buffer[128];
 static size_t buffer_len;
 static char response[256];
 
+static char current_directory[CD_PATH_MAX] = "/";
+
 volatile int shell_command_ready = 0;
 
 // The array of all your shell commands
@@ -23,9 +25,34 @@ shell_command_t command_registry[] = {
     //.command = badapple},
     {.name = "clear",
      .description = "clears the terminal screen",
-     .command = clear}};
+     .command = clear},
+    {.name = "ls",
+     .description = "prints the working directores entries to the terminal",
+     .command = ls},
+    {.name = "cd",
+     .description = "changing the working directory",
+     .command = cd},
+    {.name = "touch", .description = "create a new file", .command = touch},
+    {.name = "pwd",
+     .description = "get current working directory",
+     .command = pwd},
+    {.name = "mkdir",
+     .description = "creates new directories",
+     .command = mk_dir}};
 
 int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
+
+const char *shell_get_cwd(void) { return current_directory; }
+
+int shell_set_cwd(const char *path) {
+  size_t len = strlen(path);
+
+  if (len >= CD_PATH_MAX)
+    return -1;
+
+  memcpy(current_directory, path, len + 1);
+  return 0;
+}
 
 void clear_shell_buffer() {
   buffer[0] = '\0';

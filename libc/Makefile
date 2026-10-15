@@ -43,6 +43,9 @@ string/int_to_str.o \
 string/strcmp.o \
 string/strcpy.o \
 string/strcat.o \
+string/strstr.o \
+string/strncmp.o \
+string/split_with.o \
 
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
