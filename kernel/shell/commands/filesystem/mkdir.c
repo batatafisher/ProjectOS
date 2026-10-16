@@ -1,3 +1,4 @@
+#include "../commands.h"
 #include <fs/vfs.h>
 #include <kernel/shell.h>
 #include <string.h>

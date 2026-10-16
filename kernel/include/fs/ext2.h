@@ -174,6 +174,7 @@ int write_ext2(int fd, const uint8_t *data, size_t size);
 int read_ext2(int fd, uint8_t *buffer, size_t size);
 int list_dir_ext2(const char *path, dir_info_t *out_entries, int max_entries);
 int unlink_ext2(const char *path);
+int remove_dir_ext2(const char *path);
 int stat_ext2(const char *path);
 
 int open_ext2(const char *path, uint32_t flags);

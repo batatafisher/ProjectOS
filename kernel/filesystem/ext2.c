@@ -719,6 +719,147 @@ int open_ext2(const char *path, uint32_t flags) {
   return -1;
 }
 
+int remove_dir_ext2(const char *path) {
+  uint32_t path_len = strlen(path);
+  if ((strlen(path) == 1 && path[0] == '.') ||
+      (strlen(path) == 2 && path[0] == '.' && path[1] == '.'))
+    return ERROR_INVALID_PATH;
+
+  int i = path_len - 1;
+
+  while (i >= 0 && path[i] != '/') {
+    i--;
+  }
+
+  if (i < 0 || i == path_len - 1)
+    return ERROR_INVALID_PATH;
+
+  char parent_path[64];
+  char dir_name[32];
+
+  if (i >= (int)sizeof(parent_path) || (path_len - i - 1) >= sizeof(dir_name))
+    return ERROR_INVALID_PATH;
+
+  if (i == 0) {
+    strcpy(parent_path, "/");
+  } else {
+    memcpy(parent_path, path, i);
+    parent_path[i] = '\0';
+  }
+
+  memcpy(dir_name, path + i + 1, path_len - i - 1);
+  dir_name[path_len - i - 1] = '\0';
+
+  ext2_inodes parent;
+  uint32_t parent_num;
+  int err = resolve_path(parent_path, &parent, &parent_num);
+  if (err != NO_ERROR)
+    return err;
+
+  uint32_t target_inode_num = lookup_name(dir_name, &parent);
+  if (target_inode_num == 0)
+    return ERROR_DIR_NOT_FOUND;
+  else if (target_inode_num == 2)
+    return ERROR_FORBIDDEN;
+
+  ext2_inodes directory_inode;
+  read_inode(target_inode_num, &directory_inode, fs.sb);
+
+  // Verify target is a directory
+  if ((directory_inode.i_mode & 0xf000) != 0x4000)
+    return ERROR_NOT_A_DIR;
+
+  uint16_t block[512];
+
+  for (int b = 0; b < 12; b++) {
+    if (directory_inode.i_block[b] == 0)
+      break;
+
+    read_block(directory_inode.i_block[b], block);
+    int offset = 0;
+    while (offset < BLOCK_SIZE) {
+      ext2_dir_entry *entry = (ext2_dir_entry *)((uint8_t *)block + offset);
+
+      if (entry->rec_len == 0)
+        break;
+
+      if (entry->inode != 0) {
+        if (!(entry->name_len == 1 && entry->name[0] == '.') &&
+            !(entry->name_len == 2 && entry->name[0] == '.' &&
+              entry->name[1] == '.')) {
+          return ERROR_DIR_NOT_EMPTY;
+        }
+      }
+
+      offset += entry->rec_len;
+    }
+  }
+
+  int entry_removed = 0;
+  for (int b = 0; b < 12 && !entry_removed; b++) {
+    if (parent.i_block[b] == 0)
+      break;
+
+    read_block(parent.i_block[b], block);
+    int offset = 0;
+    ext2_dir_entry *prev_entry = NULL;
+
+    while (offset < BLOCK_SIZE) {
+      ext2_dir_entry *entry = (ext2_dir_entry *)((uint8_t *)block + offset);
+
+      if (entry->rec_len == 0)
+        break;
+
+      if (entry->inode == target_inode_num &&
+          entry->name_len == strlen(dir_name) &&
+          strncmp(entry->name, dir_name, entry->name_len) == 0) {
+
+        if (prev_entry != NULL) {
+          prev_entry->rec_len += entry->rec_len;
+        } else {
+          entry->inode = 0;
+        }
+
+        write_block(parent.i_block[b], block);
+        entry_removed = 1;
+        break;
+      }
+
+      prev_entry = entry;
+      offset += entry->rec_len;
+    }
+  }
+
+  if (!entry_removed)
+    return ERROR_DIR_NOT_FOUND;
+
+  for (int b = 0; b < 12; b++) {
+    if (directory_inode.i_block[b] == 0)
+      break;
+    free_block(directory_inode.i_block[b]);
+    directory_inode.i_block[b] = 0;
+  }
+
+  parent.i_links_count--;
+  write_inode(parent_num, &parent, fs.sb);
+  uint32_t group = (target_inode_num - 1) / fs.sb.s_inodes_per_group;
+
+  fs.gdt[group].bg_used_dirs_count--;
+  flush_gdt(group);
+
+  if (parent_num == 2) {
+    fs.root_inode.i_links_count--;
+  }
+
+  directory_inode.i_blocks = 0;
+  directory_inode.i_links_count = 0;
+  directory_inode.i_dtime = 0x5F000000;
+  write_inode(target_inode_num, &directory_inode, fs.sb);
+  free_inode(target_inode_num);
+
+  return NO_ERROR;
+}
+
 int unlink_ext2(const char *path) {
 
   uint32_t path_len = strlen(path);

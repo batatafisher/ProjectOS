@@ -22,8 +22,11 @@ NASMFLAGS:=$(NASMFLAGS) -f elf32
 LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
 ARCHDIR=arch/$(HOSTARCH)
+COMMANDSDIR=shell/commands
 
 include $(ARCHDIR)/make.config
+include $(COMMANDSDIR)/make.config
+
 
 CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
 CPPFLAGS:=$(CPPFLAGS) $(KERNEL_ARCH_CPPFLAGS)
@@ -44,17 +47,10 @@ drivers/keyboard.o \
 drivers/pit.o \
 drivers/ata.o \
 
-COMMANDS_OBJS=\
-shell/commands/echo.o \
-shell/commands/clear.o \
-shell/commands/ls.o \
-shell/commands/cd.o \
-shell/commands/touch.o \
-shell/commands/pwd.o \
-shell/commands/mkdir.o \
+
 
 SHELL_OBJS=\
-$(COMMANDS_OBJS)\
+$(SHELL_COMMANDS_OBJS) \
 shell/shell.o \
 
 INPUT_OBJS=\

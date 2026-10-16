@@ -38,7 +38,10 @@ shell_command_t command_registry[] = {
      .command = pwd},
     {.name = "mkdir",
      .description = "creates new directories",
-     .command = mk_dir}};
+     .command = mk_dir},
+    {.name = "rm", .description = "remove files of directories", .command = rm},
+    {.name = "cat", .description = "read file contents", .command = cat},
+    {.name = "put", .description = "write to a file", .command = put}};
 
 int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 

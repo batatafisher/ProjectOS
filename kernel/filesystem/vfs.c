@@ -12,8 +12,10 @@ typedef struct {
   int (*write)(int fd, const uint8_t *data, size_t size);
   int (*list)(const char *path, dir_info_t *out_entries, int max_entries);
   int (*unlink)(const char *path);
+  int (*rmdir)(const char *path);
   int (*close)(int fd);
   int (*stat)(const char *path);
+
   void (*init_fs)();
 } vfs_driver_t;
 
@@ -26,7 +28,8 @@ vfs_driver_t ext2 = {.create = create_ext2,
                      .unlink = unlink_ext2,
                      .close = close_ext2,
                      .stat = stat_ext2,
-                     .init_fs = init_ext2};
+                     .init_fs = init_ext2,
+                     .rmdir = remove_dir_ext2};
 
 vfs_driver_t *active_fs = &ext2;
 
@@ -92,6 +95,13 @@ int unlink(const char *path) {
     return ERROR_FILESYSTEM;
 
   return active_fs->unlink(path);
+}
+
+int rmdir(const char *path) {
+  if (!active_fs || !active_fs->rmdir)
+    return ERROR_FILESYSTEM;
+
+  return active_fs->rmdir(path);
 }
 
 int close(int fd) {

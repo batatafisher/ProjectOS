@@ -17,7 +17,10 @@
 #define UNEXPECTED_ERROR 10
 #define ERROR_DIR_ALREADY_EXIST 11
 #define ERROR_FILE_ALREADY_EXIST 12
-#define ERROR_TEST 13
+#define ERROR_FORBIDDEN 13
+#define ERROR_DIR_NOT_EMPTY 14
+#define ERROR_NOT_A_DIR 15
+#define ERROR_TEST 16
 
 typedef struct {
   uint32_t inode;
@@ -33,6 +36,7 @@ int read(int fd, uint8_t *buffer, size_t size);
 int write(int fd, const uint8_t *data, size_t size);
 int list(const char *path, dir_info_t *out_entries, int max_entries);
 int unlink(const char *path);
+int rmdir(const char *path);
 int close(int fd);
 int state(const char *path);
 

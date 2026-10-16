@@ -15,5 +15,8 @@ const char *cd(char *args[], int argc);
 const char *touch(char *args[], int argc);
 const char *pwd(char *args[], int argc);
 const char *mk_dir(char *args[], int argc);
+const char *cat(char *args[], int argc);
+const char *put(char *args[], int argc);
+const char *rm(char *args[], int argc);
 
 #endif
