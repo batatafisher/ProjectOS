@@ -9,15 +9,18 @@ const char *put(char *args[], int argc) {
     char *path = args[0];
     int err;
     char buffer[1024] = "";
-    for (int i = 0; i < argc - 1; i++)
+    for (int i = 1; i < argc; i++) {
       strcat(buffer, args[i]);
+      strcat(buffer, " ");
+    }
     if (path[0] == '/') {
       int fd = open(path, 0);
       if (fd >= 0) {
         err = write(fd, (uint8_t *)buffer, strlen(buffer));
-        if (err != NO_ERROR)
-          return "ERROR: couldnt read file";
         close(fd);
+        if (err != NO_ERROR) {
+          return "ERROR: couldnt write to file";
+        }
         return "ok";
       } else {
         return "ERROR: invalid path";
@@ -33,9 +36,11 @@ const char *put(char *args[], int argc) {
       int fd = open(full_path, 0);
       if (fd >= 0) {
         err = write(fd, (uint8_t *)buffer, strlen(buffer));
-        if (err != NO_ERROR)
-          return "ERROR: couldnt read file";
+
         close(fd);
+        if (err != NO_ERROR) {
+          return "ERROR: couldnt write to file";
+        }
         return "ok";
       } else {
         return "ERROR: invalid path";

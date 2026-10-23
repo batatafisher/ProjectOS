@@ -612,6 +612,9 @@ int write_ext2(int fd, const uint8_t *data, size_t size) {
   ext2_inodes inode = open_files[fd].inode;
   uint32_t inode_num = open_files[fd].inode_num;
 
+  if ((inode.i_mode & 0xF000) == 0x4000)
+    return ERROR_INVALID_PATH;
+
   for (int i = 0; i < needed_blocks; i++) {
     uint16_t block[512];
 
@@ -721,9 +724,6 @@ int open_ext2(const char *path, uint32_t flags) {
 
 int remove_dir_ext2(const char *path) {
   uint32_t path_len = strlen(path);
-  if ((strlen(path) == 1 && path[0] == '.') ||
-      (strlen(path) == 2 && path[0] == '.' && path[1] == '.'))
-    return ERROR_INVALID_PATH;
 
   int i = path_len - 1;
 
@@ -749,6 +749,10 @@ int remove_dir_ext2(const char *path) {
 
   memcpy(dir_name, path + i + 1, path_len - i - 1);
   dir_name[path_len - i - 1] = '\0';
+
+  if ((strlen(dir_name) == 1 && dir_name[0] == '.') ||
+      (strlen(dir_name) == 2 && dir_name[0] == '.' && dir_name[1] == '.'))
+    return ERROR_INVALID_PATH;
 
   ext2_inodes parent;
   uint32_t parent_num;
@@ -872,7 +876,7 @@ int unlink_ext2(const char *path) {
   if (i < 0 || i == path_len - 1)
     return ERROR_INVALID_PATH;
 
-  char parent_path[64];
+  char parent_path[128];
   char file_name[32];
 
   if (i == 0) {

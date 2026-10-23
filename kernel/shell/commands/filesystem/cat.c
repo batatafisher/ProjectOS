@@ -8,14 +8,15 @@ const char *cat(char *args[], int argc) {
   if (argc == 1) {
     char *path = args[0];
     int err;
-    uint8_t *buffer;
+    static uint8_t buffer[1024];
     if (path[0] == '/') {
       int fd = open(path, 0);
       if (fd >= 0) {
         err = read(fd, buffer, 1023);
-        if (err != NO_ERROR)
-          return "ERROR: couldnt read file";
         close(fd);
+        if (err != NO_ERROR) {
+          return "ERROR: couldnt read file";
+        }
         return (char *)buffer;
       } else {
         return "ERROR: invalid path";
@@ -31,9 +32,11 @@ const char *cat(char *args[], int argc) {
       int fd = open(full_path, 0);
       if (fd >= 0) {
         err = read(fd, buffer, 1023);
-        if (err != NO_ERROR)
-          return "ERROR: couldnt read file";
         close(fd);
+        if (err != NO_ERROR) {
+          return "ERROR: couldnt read file";
+        }
+
         return (char *)buffer;
       } else {
         return "ERROR: invalid path";

@@ -1,6 +1,6 @@
 #include <kernel/mmu.h>
 
-#define npages 1024 * 1024 // 4GB
+#define npages (1024 * 1024) // 4GB
 static uint8_t pmm_bitmap[npages / 8];
 
 void init_pmm() {
@@ -29,7 +29,7 @@ void *pmm_alloc_page() {
 }
 
 void pmm_free_page(void *physaddr) {
-  if ((uint32_t)physaddr <= (uint32_t)&endkernel - 0xC0000000)
+  if ((uint32_t)physaddr < (uint32_t)&endkernel - 0xC0000000)
     return; // kerror("Attempt to free a page that is allocated by the kernel");
   if ((uint32_t)physaddr % 4096 != 0)
     return; // kerror("Attempt to free a page that is not page-aligned");

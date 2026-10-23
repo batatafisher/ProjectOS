@@ -5,7 +5,7 @@
 
 const char *ls(char *args[], int argc) {
   static char buffer[512];
-  dir_info_t entries[64];
+  static dir_info_t entries[64];
 
   buffer[0] = '\0';
 
