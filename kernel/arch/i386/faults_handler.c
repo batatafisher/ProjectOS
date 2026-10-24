@@ -1,9 +1,7 @@
 #include <kernel/idt.h>
-#include <kernel/klib.h>
 #include <kernel/tty.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 
 void page_fault(interrupt_frame_t *frame) {
   uint32_t faulting_address;

@@ -1,4 +1,5 @@
 #include <kernel/mmu.h>
+#include <stdint.h>
 
 #define npages (1024 * 1024) // 4GB
 static uint8_t pmm_bitmap[npages / 8];
@@ -9,7 +10,8 @@ void init_pmm() {
     pmm_bitmap[i] = 0;
   }
 
-  for (int i = 0; i < ((uint32_t)&endkernel - 0xC0000000 + 0xfff) / 4096; i++) {
+  for (uint32_t i = 0; i < ((uint32_t)&endkernel - 0xC0000000 + 0xfff) / 4096;
+       i++) {
     pmm_bitmap[i / 8] |= (1 << (i % 8)); // mark pages used by kernel as used
   }
 }

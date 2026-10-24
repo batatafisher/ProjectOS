@@ -1,4 +1,4 @@
-#include <kernel/klib.h>
+#include <kernel/asmutils.h>
 #include <kernel/pic.h>
 
 #define PIC1 0x20 /* IO base address for master PIC */

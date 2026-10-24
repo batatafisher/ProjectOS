@@ -1,5 +1,5 @@
 #include <drivers/ata.h>
-#include <kernel/klib.h>
+#include <kernel/asmutils.h>
 
 static bool ata_wait_ready(uint16_t dcr) {
   for (uint32_t i = 0; i < 10000000; i++)

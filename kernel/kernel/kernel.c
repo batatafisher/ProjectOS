@@ -2,9 +2,9 @@
 #include <drivers/init_drivers.h>
 #include <fs/ext2.h>
 #include <input/keyboard.h>
+#include <kernel/asmutils.h>
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
-#include <kernel/klib.h>
 #include <kernel/mmu.h>
 #include <kernel/pic.h>
 #include <kernel/shell.h>

@@ -684,7 +684,7 @@ int read_ext2(int fd, uint8_t *buffer, size_t size) {
       memset(buffer + offset, 0,
              (bytes_remaining < BLOCK_SIZE) ? bytes_remaining : BLOCK_SIZE);
     } else {
-      uint16_t block[512]; // 1024-byte buffer
+      uint16_t block[BLOCK_SIZE / 2]; // 1024-byte buffer
       read_block(inode.i_block[i], block);
 
       size_t chunk =

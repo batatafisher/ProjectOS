@@ -1,4 +1,5 @@
 #include <arch/i386/multiboot1.h>
+#include <kernel/klib.h>
 #include <stdio.h>
 
 #define P2V(p) ((void *)((uint32_t)(p) + 0xC0000000))

@@ -1,9 +1,8 @@
 #include <drivers/keyboard.h>
 #include <input/keyboard.h>
-#include <kernel/klib.h>
+#include <kernel/asmutils.h>
 #include <kernel/shell.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #define ACK 0xFA
 #define RESEND 0xFE

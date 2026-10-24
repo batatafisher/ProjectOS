@@ -1,5 +1,5 @@
 #include <drivers/pit.h>
-#include <kernel/klib.h>
+#include <kernel/asmutils.h>
 #include <stdint.h>
 
 #define PIT_CHANNEL0 0x40
