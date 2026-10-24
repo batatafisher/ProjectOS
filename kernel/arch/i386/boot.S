@@ -33,9 +33,11 @@ page_tables:
 .global _start
 .type _start, @function
 _start:
-    movl $(stack_top - OFFSET), %esp
+  movl $(stack_top - OFFSET), %esp
+  movl %eax, %edi
+  movl %ebx, %esi
   
-  # 1. Map 16MB (4096 pages) into our page tables
+  # Map 16MB (4096 pages) into our page tables
   movl $0, %eax # eax = page index (0 to 4095)
   movl $0, %ebx # ebx = physical address
 
@@ -48,7 +50,7 @@ _start:
     cmpl $4096, %eax # 4096 * 4KB = 16MB
     jne 1b
 
-  # 2. Link all 4 tables into the Page Directory
+  # Link all 4 tables into the Page Directory
   movl $0, %eax # eax = table index (0 to 3)
   
   2:
@@ -66,7 +68,7 @@ _start:
     cmpl $4, %eax
     jne 2b
     
-  # 3. Recursive mapping and cr3 load
+  # Recursive mapping and cr3 load
   movl $(page_directory - OFFSET), %eax
   movl %eax, %cr3
   orl $3, %eax 
@@ -88,6 +90,8 @@ higher_half:
   movl %cr3, %eax
   movl %eax, %cr3
 
+  pushl %esi
+  pushl %edi
 
 	# Call the global constructors.
 	call _init
@@ -95,7 +99,6 @@ higher_half:
 	# Transfer control to the main kernel.
 	call kernel_main
 
-	# Hang if kernel_main unexpectedly returns.
 	cli
 5:	hlt
 	jmp 5b

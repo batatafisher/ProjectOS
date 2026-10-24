@@ -366,18 +366,20 @@ int resolve_path(const char *path, ext2_inodes *out_inode,
 
   if (!path || path[0] != '/')
     return ERROR_DIR_NOT_FOUND;
+  char new_path[512] = "";
 
   size_t path_len = strlen(path);
-  if (path_len > 1 && path[path_len - 1] == '/')
-    return ERROR_INVALID_PATH;
-
+  if (path_len > 1 && path[path_len - 1] == '/' && path_len < 512)
+    memcpy(new_path, path, path_len - 1);
+  else
+    memcpy(new_path, path, path_len);
   char storage[16][64];
   char *argv[16];
 
   for (int i = 0; i < 16; i++)
     argv[i] = storage[i];
 
-  int argc = split_path(path, argv, 16);
+  int argc = split_path(new_path, argv, 16);
   if (argc < 0)
     return ERROR_INVALID_PATH; // Always start traversal at Cached Root (Inode
                                // 2)
@@ -958,8 +960,9 @@ int list_dir_ext2(const char *path, dir_info_t *out_entries, int max_entries) {
   uint32_t inode_num;
 
   int err = resolve_path(path, &parent, &inode_num);
-  if (err != NO_ERROR)
+  if (err != NO_ERROR) {
     return -err;
+  }
 
   if ((parent.i_mode & 0xF000) != 0x4000)
     return -ERROR_INVALID_PATH;

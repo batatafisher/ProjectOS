@@ -10,7 +10,7 @@ const char *ls(char *args[], int argc) {
   buffer[0] = '\0';
 
   const char *path = (argc > 0) ? args[0] : shell_get_cwd();
-  int count = list(path, entries, 64);
+  int count = list(path, entries, 63);
 
   if (count < 0)
     return "ls: failed to list directory\n";

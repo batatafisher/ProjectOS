@@ -13,38 +13,20 @@ const char *put(char *args[], int argc) {
       strcat(buffer, args[i]);
       strcat(buffer, " ");
     }
-    if (path[0] == '/') {
-      int fd = open(path, 0);
-      if (fd >= 0) {
-        err = write(fd, (uint8_t *)buffer, strlen(buffer));
-        close(fd);
-        if (err != NO_ERROR) {
-          return "ERROR: couldnt write to file";
-        }
-        return "ok";
-      } else {
-        return "ERROR: invalid path";
+    char *full_path = get_full_path(path);
+    if (strcmp(full_path, "err") == 0)
+      return "ERROR: path name too long";
+    int fd = open(full_path, 0);
+    if (fd >= 0) {
+      err = write(fd, (uint8_t *)buffer, strlen(buffer));
+
+      close(fd);
+      if (err != NO_ERROR) {
+        return "ERROR: couldnt write to file";
       }
+      return "ok";
     } else {
-      char full_path[128] = "";
-      strcpy(full_path, shell_get_cwd());
-
-      if (strcmp(shell_get_cwd(), "/") != 0)
-        strcat(full_path, "/");
-
-      strcat(full_path, path);
-      int fd = open(full_path, 0);
-      if (fd >= 0) {
-        err = write(fd, (uint8_t *)buffer, strlen(buffer));
-
-        close(fd);
-        if (err != NO_ERROR) {
-          return "ERROR: couldnt write to file";
-        }
-        return "ok";
-      } else {
-        return "ERROR: invalid path";
-      }
+      return "ERROR: invalid path";
     }
   }
   return "USAGE: put [path] [text]";

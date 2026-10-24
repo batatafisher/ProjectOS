@@ -54,6 +54,7 @@ int shell_set_cwd(const char *path) {
     return -1;
 
   memcpy(current_directory, path, len + 1);
+  // TODO: the path needs to be normalized (/etc/.. should be /)
   return 0;
 }
 
@@ -61,6 +62,22 @@ void clear_shell_buffer() {
   buffer[0] = '\0';
   buffer_len = 0;
   shell_command_ready = 0;
+}
+
+char *get_full_path(const char *path) {
+  if (path[0] == '/') {
+    if (strlen(path) >= CD_PATH_MAX)
+      return "err";
+    return path;
+  } else {
+    if (strlen(path) + strlen(shell_get_cwd()) >= CD_PATH_MAX)
+      return "err";
+    static char full_path[CD_PATH_MAX] = "";
+    strcpy(full_path, shell_get_cwd());
+
+    strcat(full_path, path);
+    return full_path;
+  }
 }
 
 void init_shell() { clear_shell_buffer(); }
