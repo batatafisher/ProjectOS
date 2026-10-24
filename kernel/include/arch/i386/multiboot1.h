@@ -106,6 +106,6 @@ typedef struct __attribute__((packed)) {
   } color_info;
 } multiboot_info_t;
 
-multiboot_info_t *map_multiboot1(uint32_t magic, uint32_t mbi_phys);
+multiboot_info_t *init_multiboot1(uint32_t magic, uint32_t mbi_phys);
 
 #endif

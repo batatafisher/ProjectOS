@@ -70,4 +70,6 @@ static inline void sti() {
 
 static inline void cli() { __asm__ volatile("cli"); }
 
+static inline void hlt() { __asm__ volatile("hlt"); }
+
 #endif
