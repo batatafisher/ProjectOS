@@ -1,5 +1,6 @@
 #include <kernel/klib.h>
 #include <kernel/mmu.h>
+#include <kernel/panic.h>
 #include <stdint.h>
 
 static uint32_t bitmap_bytes;
@@ -8,7 +9,7 @@ static uint8_t *pmm_bitmap;
 
 void init_pmm(multiboot_info_t *multiboot) {
   if (!test_bit(6, (uint8_t *)&multiboot->flags))
-    return; // kerror("bad multiboot mmap entry");
+    kerror("bad multiboot mmap entry");
   uint32_t mmap_length = multiboot->mmap_length;
   uint32_t mmap_addr = multiboot->mmap_addr;
   uint32_t start_addr = mmap_addr;
@@ -78,11 +79,11 @@ void *pmm_alloc_page() {
 
 void pmm_free_page(void *physaddr) {
   if ((uint32_t)physaddr < (uint32_t)&endkernel - 0xC0000000)
-    return; // kerror("Attempt to free a page that is allocated by the kernel");
+    kerror("Attempt to free a page that is allocated by the kernel");
   if ((uint32_t)physaddr % 4096 != 0)
-    return; // kerror("Attempt to free a page that is not page-aligned");
+    kerror("Attempt to free a page that is not page-aligned");
   uint32_t page_index = (uint32_t)physaddr / 4096;
   if (page_index >= total_pages)
-    return; // kerror("Attempt to a free an out of bound page");
+    kerror("Attempt to a free an out of bound page");
   clear_bit(page_index, pmm_bitmap);
 }

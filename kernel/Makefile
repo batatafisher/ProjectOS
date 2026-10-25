@@ -63,6 +63,7 @@ tty/tty.o \
 KERNEL_OBJS=\
 $(KERNEL_ARCH_OBJS) \
 kernel/kernel.o \
+kernel/panic.o \
 $(DRIVERS_OBJS) \
 $(MEMORY_OBJS) \
 $(SHELL_OBJS) \

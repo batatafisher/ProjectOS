@@ -6,6 +6,7 @@
 #include <kernel/gdt.h>
 #include <kernel/idt.h>
 #include <kernel/mmu.h>
+#include <kernel/panic.h>
 #include <kernel/pic.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
@@ -14,17 +15,19 @@
 
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();
-  multiboot_info_t *mbi = init_multiboot1(magic, mbi_phys);
-  if (mbi == NULL) {
-    printf("PANIC!!!!!!!!!!!!!!!");
-    hlt();
-  }
+
   init_gdt();
   init_PIC(0x20, 0x28);
   init_idt();
+  init_tty();
+  multiboot_info_t *mbi = init_multiboot1(magic, mbi_phys);
+  if (mbi == NULL) {
+    kerror("bad multiboot info");
+    hlt();
+  }
 
   init_pmm(mbi);
-  init_tty();
+
   init_shell();
   init_drivers(1000);
   init_fs();

@@ -2,7 +2,6 @@
 #include <kernel/klib.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #define kernel_P2V(p) ((void *)((uint32_t)(p) + 0xC0000000))
 
