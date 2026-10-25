@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -51,12 +52,12 @@ void clear_terminal() {
 }
 
 void terminal_scroll() {
-  for (terminal_row = 1; terminal_row <= VGA_HEIGHT; terminal_row++) {
-    for (terminal_column = 0; terminal_column <= VGA_WIDTH; terminal_column++)
-      terminal_buffer[(terminal_row - 1) * VGA_WIDTH + terminal_column] =
-          terminal_buffer[terminal_row * VGA_WIDTH + terminal_column];
+  for (size_t y = 1; y < VGA_HEIGHT; y++) {
+    for (size_t x = 0; x < VGA_WIDTH; x++)
+      terminal_buffer[(y - 1) * VGA_WIDTH + x] =
+          terminal_buffer[y * VGA_WIDTH + x];
   }
-  for (int i = 0; i <= VGA_WIDTH; i++)
+  for (size_t i = 0; i < VGA_WIDTH; i++)
     terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + i] =
         vga_entry(' ', terminal_color);
   terminal_row = VGA_HEIGHT - 1;
@@ -82,6 +83,6 @@ void terminal_putchar(char c) {
   if (++terminal_column == VGA_WIDTH) {
     terminal_column = 0;
     if (++terminal_row == VGA_HEIGHT)
-      terminal_row = 0;
+      terminal_scroll();
   }
 }
