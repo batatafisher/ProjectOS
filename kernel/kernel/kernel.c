@@ -12,9 +12,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-char kernel_buffer[256] = {"thank u so much"};
-char happy[10] = {"happy :D"};
-
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();
   multiboot_info_t *mbi = init_multiboot1(magic, mbi_phys);
@@ -33,8 +30,6 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   init_fs();
 
   sti();
-
-  printf("%s  %s \n", kernel_buffer, happy);
 
   while (1) {
 

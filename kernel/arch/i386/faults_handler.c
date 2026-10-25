@@ -1,3 +1,4 @@
+#include <kernel/asmutils.h>
 #include <kernel/idt.h>
 #include <kernel/tty.h>
 #include <stdint.h>
@@ -18,7 +19,8 @@ void page_fault(interrupt_frame_t *frame) {
 
   printf("System halted.\n");
 
-  __asm__ volatile("cli; hlt");
+  cli();
+  hlt();
 }
 
 void general_fault_handler(interrupt_frame_t *frame) {
@@ -36,5 +38,6 @@ void general_fault_handler(interrupt_frame_t *frame) {
 
   printf("System halted.\n");
 
-  __asm__ volatile("cli; hlt");
+  cli();
+  hlt();
 }
