@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <arch/i386/vga_text.h>
@@ -36,12 +37,38 @@ void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
   terminal_buffer[index] = vga_entry(c, color);
 }
 
+void clear_terminal() {
+  uint16_t *vga_memory = (uint16_t *)0xC00B8000;
+
+  uint16_t blank = (terminal_color << 8) | ' ';
+
+  for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
+    vga_memory[i] = blank;
+  }
+
+  terminal_column = 0;
+  terminal_row = 0;
+}
+
+void terminal_scroll() {
+  for (terminal_row = 1; terminal_row <= VGA_HEIGHT; terminal_row++) {
+    for (terminal_column = 0; terminal_column <= VGA_WIDTH; terminal_column++)
+      terminal_buffer[(terminal_row - 1) * VGA_WIDTH + terminal_column] =
+          terminal_buffer[terminal_row * VGA_WIDTH + terminal_column];
+  }
+  for (int i = 0; i <= VGA_WIDTH; i++)
+    terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + i] =
+        vga_entry(' ', terminal_color);
+  terminal_row = VGA_HEIGHT - 1;
+  terminal_column = 0;
+}
+
 void terminal_putchar(char c) {
   unsigned char uc = c;
   if (c == '\n') {
     terminal_column = 0;
     if (++terminal_row == VGA_HEIGHT)
-      terminal_row = 0;
+      terminal_scroll();
     return;
   }
   if (c == '\b') {
@@ -57,17 +84,4 @@ void terminal_putchar(char c) {
     if (++terminal_row == VGA_HEIGHT)
       terminal_row = 0;
   }
-}
-
-void clear_terminal() {
-  uint16_t *vga_memory = (uint16_t *)0xC00B8000;
-
-  uint16_t blank = (terminal_color << 8) | ' ';
-
-  for (int i = 0; i < VGA_WIDTH * VGA_HEIGHT; i++) {
-    vga_memory[i] = blank;
-  }
-
-  terminal_column = 0;
-  terminal_row = 0;
 }
