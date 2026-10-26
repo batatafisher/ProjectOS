@@ -16,4 +16,14 @@ static inline void clear_bit(int nr, uint8_t *addr) {
   addr[nr >> 3] &= ~(1 << (nr & 7));
 }
 
+static inline uint64_t round2(int nr,
+                              uint64_t num) { // nr must be a multiple of two
+  return (num + nr - 1) & ~(nr - 1);
+}
+
+static inline uint64_t floor2(int nr,
+                              uint64_t num) { // nr must be a multiple of two
+  return num & ~(nr - 1);
+}
+
 #endif

@@ -34,6 +34,7 @@ LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
 LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
 
 MEMORY_OBJS=\
+memory/mmu.o \
 memory/vmm.o \
 memory/pmm.o \
 

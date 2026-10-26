@@ -11,7 +11,6 @@
 #include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stdint.h>
-#include <stdio.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();
@@ -27,6 +26,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   }
 
   init_pmm(mbi);
+  init_heap();
 
   init_shell();
   init_drivers(1000);
