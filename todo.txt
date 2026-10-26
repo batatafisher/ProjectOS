@@ -3,7 +3,7 @@ bootloader: done (using grub)
 kernel initialization: done
 tty: done
 better project structure : done (meaty skeleton from osdev.org)
-memory managment: pmm and vmm finished only need a heap allocator
+memory managment: pmm and vmm and a heap allocator
 gdt: done
 idt: done
 interrupts: done

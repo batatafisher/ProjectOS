@@ -10,7 +10,6 @@
 #include <kernel/pic.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
-#include <stdint.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();
@@ -22,7 +21,6 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   multiboot_info_t *mbi = init_multiboot1(magic, mbi_phys);
   if (mbi == NULL) {
     kerror("bad multiboot info");
-    hlt();
   }
 
   init_pmm(mbi);

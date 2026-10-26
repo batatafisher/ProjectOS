@@ -30,13 +30,20 @@ void init_heap(void) {
   void *addr = allocate_page();
 
   if (addr == NULL)
-    return; // out of memory
+    kerror("page allocation returned NULL in function : init_heap"); // out of
+                                                                     // memory
+                                                                     // (maybe)
 
   heap_block_t *heap = (heap_block_t *)addr;
 
   heap->size = PAGE_SIZE - sizeof(heap_block_t);
   heap->type = 0; // free
   heap->next = NULL;
+}
+
+void merge_free_blocks(heap_block_t *block1, heap_block_t *block2) {
+  block1->size += block2->size + sizeof(heap_block_t);
+  block1->next = block2->next;
 }
 
 void *kmalloc(size_t heap_size) {
@@ -73,8 +80,7 @@ void *kmalloc(size_t heap_size) {
             NULL) { // here both previous and current block were free but dont
                     // have enough space individually to hold the data needed so
                     // we merge them
-          previous_block->size += heap_block->size + sizeof(heap_block_t);
-          previous_block->next = heap_block->next;
+          merge_free_blocks(previous_block, heap_block);
           heap_block = previous_block;
           previous_block = NULL;
           continue;
@@ -114,7 +120,7 @@ void *kmalloc(size_t heap_size) {
 
 void kfree(void *ptr) {
   if (ptr == NULL)
-    kerror("tried to free a NULL pointed"); // wtf is the kernel doing
+    kerror("tried to free a NULL pointer"); // wtf is the kernel doing
 
   heap_block_t *heap_block = (heap_block_t *)ptr;
   heap_block = heap_block - 1;
@@ -123,5 +129,19 @@ void kfree(void *ptr) {
     kerror("tried to free an already not used heap block");
 
   heap_block->type = 0;
+
+  heap_block_t *prev_heap_block = heap_block;
+  heap_block = heap_block->next;
+
+  // NOTE: since heap_block_t dont have access to a prevous block its only
+  // possible to merge blocks after it
+  // TODO: maybe add a new variable in the heap_block_t struct to point to the
+  // previous block header to fix this issue
+
+  while (heap_block != NULL && heap_block->type == 0) {
+    merge_free_blocks(prev_heap_block, heap_block);
+    heap_block = heap_block->next;
+  }
+
   return;
 }
