@@ -10,6 +10,7 @@
 #include <kernel/pic.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
+#include <stdint.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();

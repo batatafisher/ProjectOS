@@ -118,9 +118,17 @@ void *kmalloc(size_t heap_size) {
   }
 }
 
+void *kcalloc(size_t count, size_t size) {
+  void *addr = kmalloc(count * size);
+  if (addr == NULL)
+    return addr;
+  memset(addr, 0, count * size);
+  return addr;
+}
+
 void kfree(void *ptr) {
   if (ptr == NULL)
-    kerror("tried to free a NULL pointer"); // wtf is the kernel doing
+    return; // i understand the appeal now
 
   heap_block_t *heap_block = (heap_block_t *)ptr;
   heap_block = heap_block - 1;
@@ -144,4 +152,26 @@ void kfree(void *ptr) {
   }
 
   return;
+}
+
+void *krealloc(void *ptr, size_t size) {
+  // TODO: this is a very primitive implementation , consider updating it later
+
+  if (!ptr)
+    return kmalloc(size);
+
+  void *new_ptr = kmalloc(size);
+
+  if (new_ptr == NULL) {
+    kfree(ptr);
+    return NULL;
+  }
+
+  heap_block_t *heap_block = (heap_block_t *)ptr - 1;
+
+  memcpy(new_ptr, ptr, heap_block->size);
+
+  kfree(ptr);
+
+  return new_ptr;
 }

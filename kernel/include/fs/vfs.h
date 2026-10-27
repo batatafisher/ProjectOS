@@ -20,7 +20,11 @@
 #define ERROR_FORBIDDEN 13
 #define ERROR_DIR_NOT_EMPTY 14
 #define ERROR_NOT_A_DIR 15
-#define ERROR_TEST 16
+#define ERROR_FILENAME_TOO_BIG 16
+#define ERROR_PATH_EXEEDED_MAX_DEPTH 17
+#define ERROR_OUT_OF_MEMORY 18
+#define ERROR_STORAGE_DRIVER 19
+#define ERROR_TEST 20
 
 typedef struct {
   uint32_t inode;

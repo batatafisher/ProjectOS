@@ -141,7 +141,7 @@ typedef struct __attribute__((packed)) {
 typedef struct {
   ext2_superblock sb;
   ext2_inodes root_inode;
-  ext2_blockgroup gdt[];
+  ext2_blockgroup *gdt;
 } ext2_filesystem;
 
 typedef struct __attribute__((packed)) {

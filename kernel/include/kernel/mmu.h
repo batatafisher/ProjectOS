@@ -26,6 +26,8 @@ void unmap_page(void *virtualaddr);
 
 void init_heap(void);
 void *kmalloc(size_t size);
+void *kcalloc(size_t count, size_t size);
 void kfree(void *ptr);
+void *krealloc(void *ptr, size_t size);
 
 #endif
