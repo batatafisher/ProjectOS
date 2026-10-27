@@ -15,6 +15,8 @@ static ext2_filesystem fs;
 #define MAX_FILENAME 255
 #define MAX_PATH_DEPTH 16
 
+#define PARENT_PATH_MAX (MAX_FILENAME * MAX_PATH_DEPTH + 1)
+
 static struct file open_files[MAX_FILES];
 
 const driverdata_t qemu_disk = {
@@ -497,6 +499,55 @@ int resolve_path(const char *path, ext2_inodes *out_inode,
   return NO_ERROR;
 }
 
+int split_parent_child(const char *path, char *parent_path, char *name,
+                       bool *is_root) {
+  *is_root = false;
+
+  if (!path || path[0] != '/')
+    return ERROR_DIR_NOT_FOUND;
+
+  int len = strlen(path);
+  while (len > 1 && path[len - 1] == '/')
+    len--;
+
+  if (len == 1) {
+    *is_root = true;
+    return NO_ERROR;
+  }
+
+  int last_slash = -1;
+  for (int i = len - 1; i >= 0; i--) {
+    if (path[i] == '/') {
+      last_slash = i;
+      break;
+    }
+  }
+
+  if (last_slash == -1)
+    return ERROR_DIR_NOT_FOUND;
+
+  int child_len = len - (last_slash + 1);
+  if (child_len <= 0)
+    return ERROR_DIR_NOT_FOUND;
+  if (child_len > MAX_FILENAME)
+    return ERROR_FILENAME_TOO_BIG;
+
+  if (last_slash == 0) {
+    parent_path[0] = '/';
+    parent_path[1] = '\0';
+  } else {
+    if (last_slash >= PARENT_PATH_MAX)
+      return ERROR_FILENAME_TOO_BIG;
+    memcpy(parent_path, path, last_slash);
+    parent_path[last_slash] = '\0';
+  }
+
+  memcpy(name, path + last_slash + 1, child_len);
+  name[child_len] = '\0';
+
+  return NO_ERROR;
+}
+
 void mount_ext2() {
   if (!read_superblock(&fs.sb)) {
     printf("Error: Failed to read superblock\n");
@@ -531,55 +582,19 @@ void init_ext2() {
 }
 
 int mkdir_ext2(const char *path) {
-  if (!path || path[0] != '/')
-    return ERROR_DIR_NOT_FOUND;
 
-  int len = strlen(path);
-  while (len > 1 && path[len - 1] == '/') {
-    len--;
-  }
-
-  // Cannot recreate root directory
-  if (len == 1 && path[0] == '/') {
-    return ERROR_DIR_ALREADY_EXIST;
-  }
-
-  int last_slash = -1;
-  for (int i = len - 1; i >= 0; i--) {
-    if (path[i] == '/') {
-      last_slash = i;
-      break;
-    }
-  }
-
-  if (last_slash == -1)
-    return ERROR_DIR_NOT_FOUND;
-
-  char parent_path[MAX_FILENAME * MAX_PATH_DEPTH + 1];
+  char parent_path[PARENT_PATH_MAX];
   char child_name[MAX_FILENAME + 1];
-
-  int child_len = len - (last_slash + 1);
-  if (child_len <= 0)
-    return ERROR_DIR_NOT_FOUND;
-  if (child_len > MAX_FILENAME)
-    return ERROR_FILENAME_TOO_BIG;
-
-  if (last_slash == 0) {
-    parent_path[0] = '/';
-    parent_path[1] = '\0';
-  } else {
-    if (last_slash >= (int)sizeof(parent_path))
-      return ERROR_FILENAME_TOO_BIG;
-    memcpy(parent_path, path, last_slash);
-    parent_path[last_slash] = '\0';
-  }
-
-  memcpy(child_name, path + last_slash + 1, child_len);
-  child_name[child_len] = '\0';
+  bool is_root;
+  int err = split_parent_child(path, parent_path, child_name, &is_root);
+  if (err != NO_ERROR)
+    return err;
+  if (is_root)
+    return ERROR_DIR_ALREADY_EXIST;
 
   ext2_inodes parent_dir;
   uint32_t parent_inode_num;
-  int err = resolve_path(parent_path, &parent_dir, &parent_inode_num);
+  err = resolve_path(parent_path, &parent_dir, &parent_inode_num);
   if (err != NO_ERROR)
     return err;
 
@@ -650,55 +665,18 @@ int mkdir_ext2(const char *path) {
 }
 
 int create_ext2(const char *path) {
-  if (!path || path[0] != '/')
-    return ERROR_DIR_NOT_FOUND;
-
-  int len = strlen(path);
-  while (len > 1 && path[len - 1] == '/') {
-    len--;
-  }
-
-  // Cannot recreate root directory
-  if (len == 1 && path[0] == '/') {
-    return ERROR_FILE_ALREADY_EXIST;
-  }
-
-  int last_slash = -1;
-  for (int i = len - 1; i >= 0; i--) {
-    if (path[i] == '/') {
-      last_slash = i;
-      break;
-    }
-  }
-
-  if (last_slash == -1)
-    return ERROR_DIR_NOT_FOUND;
-
-  char parent_path[MAX_FILENAME * MAX_PATH_DEPTH + 1];
+  char parent_path[PARENT_PATH_MAX];
   char child_name[MAX_FILENAME + 1];
-
-  int child_len = len - (last_slash + 1);
-  if (child_len <= 0)
-    return ERROR_DIR_NOT_FOUND;
-  if (child_len > MAX_FILENAME)
-    return ERROR_FILENAME_TOO_BIG;
-
-  if (last_slash == 0) {
-    parent_path[0] = '/';
-    parent_path[1] = '\0';
-  } else {
-    if (last_slash >= (int)sizeof(parent_path))
-      return ERROR_FILENAME_TOO_BIG;
-    memcpy(parent_path, path, last_slash);
-    parent_path[last_slash] = '\0';
-  }
-
-  memcpy(child_name, path + last_slash + 1, child_len);
-  child_name[child_len] = '\0';
+  bool is_root;
+  int err = split_parent_child(path, parent_path, child_name, &is_root);
+  if (err != NO_ERROR)
+    return err;
+  if (is_root)
+    return ERROR_FILE_ALREADY_EXIST;
 
   ext2_inodes parent_dir;
   uint32_t parent_inode_num;
-  int err = resolve_path(parent_path, &parent_dir, &parent_inode_num);
+  err = resolve_path(parent_path, &parent_dir, &parent_inode_num);
   if (err != NO_ERROR)
     return err;
 
@@ -749,20 +727,22 @@ int write_ext2(int fd, const uint8_t *data, size_t size) {
 
   if ((inode.i_mode & 0xF000) == 0x4000)
     return ERROR_INVALID_PATH;
-
+  bool fresh[12] = {false};
   for (int i = 0; i < needed_blocks; i++) {
     uint16_t block[BLOCK_SIZE / 2];
 
     uint32_t datablock_num = inode.i_block[i];
+
     if (datablock_num == 0) {
       datablock_num = allocate_block();
       if (datablock_num == 0) {
         for (int j = 0; j < i; j++)
-          if (!free_block(inode.i_block[j]))
-            return ERROR_STORAGE_DRIVER;
+          if (fresh[j])
+            free_block(inode.i_block[j]);
         return ERROR_NO_SPACE;
       }
       inode.i_block[i] = datablock_num;
+      fresh[i] = true;
     }
 
     if (i == needed_blocks - 1) {
@@ -851,7 +831,7 @@ int open_ext2(const char *path, uint32_t flags) {
   uint32_t inode_num;
   int err = resolve_path(path, &inode, &inode_num);
   if (err != NO_ERROR)
-    return -1;
+    return -err;
 
   for (int i = 0; i < MAX_FILES; i++) {
     if (!open_files[i].used) {
@@ -865,55 +845,18 @@ int open_ext2(const char *path, uint32_t flags) {
     }
   }
 
-  return -1;
+  return -ERROR_IDK;
 }
 
 int remove_dir_ext2(const char *path) {
-  if (!path || path[0] != '/')
-    return ERROR_DIR_NOT_FOUND;
-
-  int len = strlen(path);
-  while (len > 1 && path[len - 1] == '/') {
-    len--;
-  }
-
-  // Cannot remove root directory
-  if (len == 1 && path[0] == '/') {
-    return ERROR_FORBIDDEN;
-  }
-
-  int last_slash = -1;
-  for (int i = len - 1; i >= 0; i--) {
-    if (path[i] == '/') {
-      last_slash = i;
-      break;
-    }
-  }
-
-  if (last_slash == -1)
-    return ERROR_DIR_NOT_FOUND;
-
-  char parent_path[MAX_FILENAME * MAX_PATH_DEPTH + 1];
+  char parent_path[PARENT_PATH_MAX];
   char dir_name[MAX_FILENAME + 1];
-
-  int child_len = len - (last_slash + 1);
-  if (child_len <= 0)
-    return ERROR_DIR_NOT_FOUND;
-  if (child_len > MAX_FILENAME)
-    return ERROR_FILENAME_TOO_BIG;
-
-  if (last_slash == 0) {
-    parent_path[0] = '/';
-    parent_path[1] = '\0';
-  } else {
-    if (last_slash >= (int)sizeof(parent_path))
-      return ERROR_FILENAME_TOO_BIG;
-    memcpy(parent_path, path, last_slash);
-    parent_path[last_slash] = '\0';
-  }
-
-  memcpy(dir_name, path + last_slash + 1, child_len);
-  dir_name[child_len] = '\0';
+  bool is_root;
+  int err = split_parent_child(path, parent_path, dir_name, &is_root);
+  if (err != NO_ERROR)
+    return err;
+  if (is_root)
+    return ERROR_FORBIDDEN;
 
   if ((strlen(dir_name) == 1 && dir_name[0] == '.') ||
       (strlen(dir_name) == 2 && dir_name[0] == '.' && dir_name[1] == '.'))
@@ -921,7 +864,7 @@ int remove_dir_ext2(const char *path) {
 
   ext2_inodes parent;
   uint32_t parent_num;
-  int err = resolve_path(parent_path, &parent, &parent_num);
+  err = resolve_path(parent_path, &parent, &parent_num);
   if (err != NO_ERROR)
     return err;
 
@@ -1042,58 +985,20 @@ int remove_dir_ext2(const char *path) {
 }
 
 int unlink_ext2(const char *path) {
-  if (!path || path[0] != '/')
-    return ERROR_DIR_NOT_FOUND;
-
-  int len = strlen(path);
-  while (len > 1 && path[len - 1] == '/') {
-    len--;
-  }
-
-  // Cannot unlink root directory
-  if (len == 1 && path[0] == '/') {
-    return ERROR_FORBIDDEN;
-  }
-
-  int last_slash = -1;
-  for (int i = len - 1; i >= 0; i--) {
-    if (path[i] == '/') {
-      last_slash = i;
-      break;
-    }
-  }
-
-  if (last_slash == -1)
-    return ERROR_DIR_NOT_FOUND;
-
-  char parent_path[MAX_FILENAME * MAX_PATH_DEPTH + 1];
+  char parent_path[PARENT_PATH_MAX];
   char file_name[MAX_FILENAME + 1];
-
-  int child_len = len - (last_slash + 1);
-  if (child_len <= 0)
-    return ERROR_DIR_NOT_FOUND;
-  if (child_len > MAX_FILENAME)
-    return ERROR_FILENAME_TOO_BIG;
-
-  if (last_slash == 0) {
-    parent_path[0] = '/';
-    parent_path[1] = '\0';
-  } else {
-    if (last_slash >= (int)sizeof(parent_path))
-      return ERROR_FILENAME_TOO_BIG;
-    memcpy(parent_path, path, last_slash);
-    parent_path[last_slash] = '\0';
-  }
-
-  memcpy(file_name, path + last_slash + 1, child_len);
-  file_name[child_len] = '\0';
-
-  ext2_inodes parent;
-  uint32_t parent_num;
-  int err = resolve_path(parent_path, &parent, &parent_num);
+  bool is_root;
+  int err = split_parent_child(path, parent_path, file_name, &is_root);
   if (err != NO_ERROR)
     return err;
+  if (is_root)
+    return ERROR_FORBIDDEN;
 
+  ext2_inodes parent;
+  uint32_t parent_inode_num;
+  err = resolve_path(parent_path, &parent, &parent_inode_num);
+  if (err != NO_ERROR)
+    return err;
   if ((parent.i_mode & 0xF000) != 0x4000)
     return ERROR_INVALID_PATH;
 
