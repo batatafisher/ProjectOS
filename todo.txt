@@ -9,8 +9,9 @@ idt: done
 interrupts: done
 keyboard output: done
 badapple: under work
-shell: done for now only have (echo, clear, badapple?, rm, cat, cd, pwd, write, touch, mkdir) commands
+shell: done for now only have (echo, clear, badapple?, rm, cat, cd, pwd, put, touch, mkdir) commands
 file system: (ext2, vfs) done?
+arch specific variables abstraction: in dev
 userspace: pending
 
 

@@ -10,6 +10,7 @@
 #define PAGE_FLAGS 0x2 // the vmm automatically adds the 0x1 (present) flag
 
 static int current_heap_pages;
+static size_t used_size;
 
 void *allocate_page() {
   void *phys_addr = pmm_alloc_page();
@@ -27,6 +28,7 @@ void *allocate_page() {
 
 void init_heap(void) {
   current_heap_pages = 0;
+  used_size = 0;
   void *addr = allocate_page();
 
   if (addr == NULL)
@@ -71,9 +73,11 @@ void *kmalloc(size_t heap_size) {
           heap_block->next = new_heap_block;
           heap_block->size = size;
           heap_block->type = 1;
+          used_size += size;
           return (void *)(heap_block + 1);
         }
         heap_block->type = 1;
+        used_size += size;
         return (void *)(heap_block + 1);
       } else {
         if (previous_block !=
@@ -137,6 +141,7 @@ void kfree(void *ptr) {
     kerror("tried to free an already not used heap block");
 
   heap_block->type = 0;
+  used_size -= heap_block->size;
 
   heap_block_t *prev_heap_block = heap_block;
   heap_block = heap_block->next;
@@ -155,23 +160,27 @@ void kfree(void *ptr) {
 }
 
 void *krealloc(void *ptr, size_t size) {
-  // TODO: this is a very primitive implementation , consider updating it later
-
   if (!ptr)
     return kmalloc(size);
+
+  heap_block_t *heap_block = (heap_block_t *)ptr - 1;
+  if (size <= heap_block->size) {
+    return ptr;
+  }
 
   void *new_ptr = kmalloc(size);
 
   if (new_ptr == NULL) {
-    kfree(ptr);
     return NULL;
   }
 
-  heap_block_t *heap_block = (heap_block_t *)ptr - 1;
-
-  memcpy(new_ptr, ptr, heap_block->size);
+  if (size > heap_block->size)
+    memcpy(new_ptr, ptr, heap_block->size);
 
   kfree(ptr);
 
   return new_ptr;
 }
+
+size_t get_heap_size_u() { return used_size; }
+int get_pages_u() { return current_heap_pages; }

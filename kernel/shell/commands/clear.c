@@ -1,16 +1,12 @@
 #include "commands.h"
 #include <kernel/tty.h>
+#include <stdio.h>
 #include <string.h>
 
-char response[28] = {""};
-
-const char *clear(char *argv[], int argc) {
+void clear(char *argv[], int argc) {
   if (argc > 0) {
-    strcat(response, "ERROR expected 0 arguments found ");
-    char str[5];
-    int_to_str(argc, str);
-    strcat(response, str);
+    printf("ERROR expected 0 arguments found %d\n", argc);
   } else
     clear_screen();
-  return response;
+  return;
 }

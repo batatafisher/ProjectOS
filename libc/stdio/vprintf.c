@@ -50,6 +50,8 @@ int vprintf(const char *restrict format, va_list parameters) {
     } else if (*format == 's') {
       format++;
       const char *str = va_arg(parameters, const char *);
+      if (str == NULL)
+        str = "(nill)";
       size_t len = strlen(str);
       if (maxrem < len) {
         // TODO: Set errno to EOVERFLOW.

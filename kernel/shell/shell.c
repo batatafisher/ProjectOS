@@ -1,14 +1,18 @@
 #include "commands/commands.h"
 #include <input/keyboard.h>
+#include <kernel/asmutils.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-static char buffer[128];
+#define INIT_BUFFER_SIZE 128
+#define BUFFER_ADDITION_COUNT 16
+
+static char *buffer;
 static size_t buffer_len;
-static char response[256];
+static size_t buffer_size;
 
 static char current_directory[CD_PATH_MAX] = "/";
 
@@ -41,7 +45,10 @@ shell_command_t command_registry[] = {
      .command = mk_dir},
     {.name = "rm", .description = "remove files of directories", .command = rm},
     {.name = "cat", .description = "read file contents", .command = cat},
-    {.name = "put", .description = "write to a file", .command = put}};
+    {.name = "put", .description = "write to a file", .command = put},
+    {.name = "heap",
+     .description = "somthing related to the heap",
+     .command = heap}};
 
 int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 
@@ -59,6 +66,9 @@ int shell_set_cwd(const char *path) {
 }
 
 void clear_shell_buffer() {
+  kfree(buffer);
+  buffer = kmalloc(sizeof(char) * INIT_BUFFER_SIZE);
+  buffer_size = INIT_BUFFER_SIZE;
   buffer[0] = '\0';
   buffer_len = 0;
   shell_command_ready = 0;
@@ -80,7 +90,10 @@ char *get_full_path(const char *path) {
   }
 }
 
-void init_shell() { clear_shell_buffer(); }
+void init_shell() {
+  buffer = NULL;
+  clear_shell_buffer();
+}
 
 int split_shell_command(char *str, char *args[], int max_args) {
   int argc = 0;
@@ -106,29 +119,33 @@ int split_shell_command(char *str, char *args[], int max_args) {
   return argc;
 }
 
-char *shell(char *command) {
+void shell(char *command) {
   char *argv[16];
   int argc = split_shell_command(command, argv, 16);
   if (argc == 0)
-    strcpy(response, "ERROR: no command was provided");
+    printf("ERROR: no command was provided\n");
   else {
     int i = 0;
     while (strcmp(argv[0], command_registry[i].name) != 0) {
       i++;
       if (i >= num_commands) {
-        strcpy(response, argv[0]);
-        strcat(response, ": command not found\n");
+        printf("%s : command not found\n", argv[0]);
         clear_shell_buffer();
-        return response;
+        return;
       }
     }
-    strcpy(response, command_registry[i].command(argv + 1, argc - 1));
+    command_registry[i].command(argv + 1, argc - 1);
   }
   clear_shell_buffer();
-  return strcat(response, "\n");
+
+  return;
 }
 
 void shell_buffer(char c) {
+  if (c == '\b' && buffer_len == 0) {
+    return;
+  }
+
   if (c == '\b' && buffer_len != 0)
     buffer[--buffer_len] = '\0';
 
@@ -136,10 +153,15 @@ void shell_buffer(char c) {
     shell_command_ready = 1;
   }
 
-  else if (buffer_len < sizeof(buffer) - 1) {
+  else {
+    if (buffer_len + 1 >= buffer_size) {
+      buffer_size += BUFFER_ADDITION_COUNT;
+      buffer = krealloc(buffer, buffer_size);
+    }
     buffer[buffer_len++] = c;
     buffer[buffer_len] = '\0';
   }
+
   putchar(c);
 }
 
@@ -151,11 +173,13 @@ void run_shell() {
   }
   char c = keyboard_dequeue();
   while (c != 0) {
+
     shell_buffer(c);
+
     c = keyboard_dequeue();
   }
   if (shell_command_ready) {
-    printf("%s", shell(buffer));
-    printf("ProjectOS> ");
+    shell(buffer);
+    printf("\nProjectOS> ");
   }
 }

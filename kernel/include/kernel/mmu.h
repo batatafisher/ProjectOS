@@ -30,4 +30,7 @@ void *kcalloc(size_t count, size_t size);
 void kfree(void *ptr);
 void *krealloc(void *ptr, size_t size);
 
+size_t get_heap_size_u();
+int get_pages_u();
+
 #endif

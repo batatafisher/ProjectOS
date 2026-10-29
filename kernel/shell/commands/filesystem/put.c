@@ -2,9 +2,10 @@
 #include <fs/vfs.h>
 #include <kernel/shell.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
-const char *put(char *args[], int argc) {
+void put(char *args[], int argc) {
   if (argc > 1) {
     char *path = args[0];
     int err;
@@ -14,20 +15,26 @@ const char *put(char *args[], int argc) {
       strcat(buffer, " ");
     }
     char *full_path = get_full_path(path);
-    if (strcmp(full_path, "err") == 0)
-      return "ERROR: path name too long";
+    if (strcmp(full_path, "err") == 0) {
+      printf("ERROR: path name too long\n");
+      return;
+    }
     int fd = open(full_path, 0);
     if (fd >= 0) {
       err = write(fd, (uint8_t *)buffer, strlen(buffer));
 
       close(fd);
       if (err != NO_ERROR) {
-        return "ERROR: couldnt write to file";
+        printf("ERROR: couldnt write to file\n");
+        return;
       }
-      return "ok";
+      printf("ok\n");
+      return;
     } else {
-      return "ERROR: invalid path";
+      printf("ERROR: invalid path\n");
+      return;
     }
   }
-  return "USAGE: put [path] [text]";
+  printf("USAGE: put [path] [text]\n");
+  return;
 }

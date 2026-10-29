@@ -2,27 +2,34 @@
 #include <fs/vfs.h>
 #include <kernel/shell.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
-const char *cat(char *args[], int argc) {
+void cat(char *args[], int argc) {
   if (argc == 1) {
     char *path = args[0];
     int bytes_count;
     static uint8_t buffer[1024];
     char *full_path = get_full_path(path);
-    if (strcmp(full_path, "err") == 0)
-      return "ERROR: path name too long";
+    if (strcmp(full_path, "err") == 0) {
+      printf("ERROR: path name too long\n");
+      return;
+    }
     int fd = open(full_path, 0);
     if (fd >= 0) {
       bytes_count = read(fd, buffer, 1023);
       close(fd);
       if (bytes_count < 0) {
-        return "ERROR: couldnt read file";
+        printf("ERROR: couldnt read file\n");
+        return;
       }
-      return (char *)buffer;
+      printf("%s", (char *)buffer);
+      return;
     } else {
-      return "ERROR: invalid path";
+      printf("ERROR: invalid path\n");
+      return;
     }
   }
-  return "USAGE: cat [path]";
+  printf("USAGE: cat [path]\n");
+  return;
 }

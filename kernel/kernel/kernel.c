@@ -28,6 +28,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   init_heap();
 
   init_shell();
+
   init_drivers(1000);
   init_fs();
 

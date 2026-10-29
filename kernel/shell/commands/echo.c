@@ -1,8 +1,11 @@
 #include "commands.h"
+#include <stdio.h>
 
-const char *echo(char *args[], int argc) {
+void echo(char *args[], int argc) {
   if (argc == 0 || argc > 1) {
-    return "USAGE: echo [message]";
+    printf("USAGE: echo [message]\n");
+    return;
   }
-  return args[0];
+  printf("%s\n", args[0]);
+  return;
 }
