@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void page_fault(interrupt_frame_t *frame) {
+__attribute__((__noreturn__)) void page_fault(interrupt_frame_t *frame) {
   uint32_t faulting_address;
   __asm__ volatile("mov %%cr2, %0" : "=r"(faulting_address));
 
@@ -20,10 +20,12 @@ void page_fault(interrupt_frame_t *frame) {
   printf("System halted.\n");
 
   cli();
-  hlt();
+  for (;;)
+    hlt();
 }
 
-void general_fault_handler(interrupt_frame_t *frame) {
+__attribute__((__noreturn__)) void
+general_fault_handler(interrupt_frame_t *frame) {
   uint32_t faulting_address;
   __asm__ volatile("mov %%cr2, %0" : "=r"(faulting_address));
 
@@ -39,5 +41,6 @@ void general_fault_handler(interrupt_frame_t *frame) {
   printf("System halted.\n");
 
   cli();
-  hlt();
+  for (;;)
+    hlt();
 }

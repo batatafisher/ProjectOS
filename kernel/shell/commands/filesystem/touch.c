@@ -9,18 +9,18 @@ void touch(char *args[], int argc) {
     char *path = args[0];
     char *full_path = get_full_path(path);
     if (strcmp(full_path, "err") == 0) {
-      printf("ERROR: path name too long\n");
+      printf("ERROR: path name too long");
       return;
     }
     int err = create(full_path);
     if (err != NO_ERROR) {
-      printf("ERROR: couldnt create file\n");
+      printf("ERROR: couldnt create file");
       return;
     }
 
-    printf("ok\n");
+    printf("ok");
     return;
   }
 
-  printf("USAGE: touch [path]\n");
+  printf("USAGE: touch [path]");
 }

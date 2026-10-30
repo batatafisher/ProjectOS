@@ -10,7 +10,7 @@ void ls(char *args[], int argc) {
 
   static dir_info_t entries[64];
 
-  const char *path = (argc > 0) ? args[0] : shell_get_cwd();
+  const char *path = (argc > 0) ? get_full_path(args[0]) : shell_get_cwd();
   int count = list(path, entries, 63);
 
   if (count <= 0) {

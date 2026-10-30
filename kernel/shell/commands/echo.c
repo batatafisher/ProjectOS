@@ -3,9 +3,9 @@
 
 void echo(char *args[], int argc) {
   if (argc == 0 || argc > 1) {
-    printf("USAGE: echo [message]\n");
+    printf("USAGE: echo [message]");
     return;
   }
-  printf("%s\n", args[0]);
+  printf("%s", args[0]);
   return;
 }

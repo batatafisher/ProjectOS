@@ -9,16 +9,16 @@ void mk_dir(char *args[], int argc) {
     char *path = args[0];
     char *full_path = get_full_path(path);
     if (strcmp(full_path, "err") == 0) {
-      printf("ERROR: path name too long\n");
+      printf("ERROR: path name too long");
       return;
     }
     int err = mkdir(full_path);
     if (err != NO_ERROR) {
-      printf("ERROR: couldnt create directory\n");
+      printf("ERROR: couldnt create directory");
       return;
     }
 
-    printf("ok\n");
+    printf("ok");
     return;
   }
 

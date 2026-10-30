@@ -11,13 +11,13 @@ void cd(char *args[], int argc) {
 
     if (args[0][0] == '/') {
       if (strlen(args[0]) >= CD_PATH_MAX) {
-        printf("ERROR: path too long\n");
+        printf("ERROR: path too long");
         return;
       }
       strcpy(full_path, args[0]);
     } else {
       if (strlen(args[0]) + strlen(cwd) >= CD_PATH_MAX) {
-        printf("ERROR: path too long\n");
+        printf("ERROR: path too long");
         return;
       }
 
@@ -29,17 +29,17 @@ void cd(char *args[], int argc) {
     int type = state(full_path);
 
     if (type < 0) {
-      printf("ERROR: invalid path\n");
+      printf("ERROR: invalid path");
       return;
     }
 
     if (type == 1) {
-      printf("ERROR: provided path is not a directory\n");
+      printf("ERROR: provided path is not a directory");
       return;
     }
 
     if (type != 2) {
-      printf("ERROR: unknown file type\n");
+      printf("ERROR: unknown file type");
       return;
     }
     int path_len = strlen(full_path);
@@ -48,9 +48,9 @@ void cd(char *args[], int argc) {
     else
       shell_set_cwd(strcat(full_path, "/"));
 
-    printf("ok\n");
+    printf("ok");
     return;
   }
-  printf("USAGE: cd [path]\n");
+  printf("USAGE: cd [path]");
   return;
 }

@@ -84,7 +84,9 @@ char *get_full_path(const char *path) {
       return "err";
     static char full_path[CD_PATH_MAX] = "";
     strcpy(full_path, shell_get_cwd());
-
+    size_t len = strlen(full_path);
+    if (len > 0 && full_path[len - 1] != '/')
+      strcat(full_path, "/");
     strcat(full_path, path);
     return full_path;
   }

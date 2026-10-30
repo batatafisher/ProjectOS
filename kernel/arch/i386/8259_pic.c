@@ -85,9 +85,9 @@ void init_PIC(int offset1, int offset2) { // more accuratly PIC_remap but for
   outb(PIC2_DATA, ICW4_8086);
   io_wait();
 
-  // Unmask both PICs.
-  outb(PIC1_DATA, 0);
-  outb(PIC2_DATA, 0);
+  // mask all.
+  outb(PIC1_DATA, 0xff);
+  outb(PIC2_DATA, 0xff);
 
   // unmasking relevel IRQs
   IRQ_unmask(1);

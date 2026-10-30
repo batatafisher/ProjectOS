@@ -10,7 +10,7 @@ void rm(char *args[], int argc) {
     int err;
     char *full_path = get_full_path(path);
     if (strcmp(full_path, "err") == 0) {
-      printf("ERROR: path name too long\n");
+      printf("ERROR: path name too long");
       return;
     }
     int stat = state(full_path);
@@ -22,11 +22,11 @@ void rm(char *args[], int argc) {
       err = stat;
 
     if (err != NO_ERROR) {
-      printf("ERROR: connot remove file\n");
+      printf("ERROR: connot remove file");
       return;
     }
-    printf("ok\n");
+    printf("ok");
     return;
   }
-  printf("USAGE: rm [path]\n");
+  printf("USAGE: rm [path]");
 }

@@ -12,7 +12,7 @@ void cat(char *args[], int argc) {
     static uint8_t buffer[1024];
     char *full_path = get_full_path(path);
     if (strcmp(full_path, "err") == 0) {
-      printf("ERROR: path name too long\n");
+      printf("ERROR: path name too long");
       return;
     }
     int fd = open(full_path, 0);
@@ -20,16 +20,17 @@ void cat(char *args[], int argc) {
       bytes_count = read(fd, buffer, 1023);
       close(fd);
       if (bytes_count < 0) {
-        printf("ERROR: couldnt read file\n");
+        printf("ERROR: couldnt read file");
         return;
       }
+      buffer[bytes_count] = '\0';
       printf("%s", (char *)buffer);
       return;
     } else {
-      printf("ERROR: invalid path\n");
+      printf("ERROR: invalid path");
       return;
     }
   }
-  printf("USAGE: cat [path]\n");
+  printf("USAGE: cat [path]");
   return;
 }
