@@ -64,6 +64,7 @@ int vprintf(const char *restrict format, va_list parameters) {
       format++;
       uint32_t value = va_arg(parameters, uint32_t);
       char buffer[9];
+
       hex_to_string(value, buffer);
       size_t len = strlen(buffer);
       if (maxrem < len) {
@@ -75,8 +76,8 @@ int vprintf(const char *restrict format, va_list parameters) {
       written += len;
     } else if (*format == 'd') {
       format++;
-      uint32_t value = va_arg(parameters, int);
-      char buffer[12];
+      int value = va_arg(parameters, int);
+      char buffer[13];
       int_to_str(value, buffer);
       size_t len = strlen(buffer);
       if (maxrem < len) {

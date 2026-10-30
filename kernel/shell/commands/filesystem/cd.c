@@ -6,24 +6,12 @@
 
 void cd(char *args[], int argc) {
   if (argc == 1) {
-    const char *cwd = shell_get_cwd();
-    char full_path[CD_PATH_MAX] = "";
+    char *full_path;
 
-    if (args[0][0] == '/') {
-      if (strlen(args[0]) >= CD_PATH_MAX) {
-        printf("ERROR: path too long");
-        return;
-      }
-      strcpy(full_path, args[0]);
-    } else {
-      if (strlen(args[0]) + strlen(cwd) >= CD_PATH_MAX) {
-        printf("ERROR: path too long");
-        return;
-      }
-
-      strcpy(full_path, cwd);
-
-      strcat(full_path, args[0]);
+    full_path = get_full_path(args[0]);
+    if (strcmp(full_path, "err") == 0) {
+      printf("ERROR: invalid path");
+      return;
     }
 
     int type = state(full_path);

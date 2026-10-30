@@ -548,14 +548,14 @@ int split_parent_child(const char *path, char *parent_path, char *name,
   return NO_ERROR;
 }
 
-void mount_ext2() {
+int mount_ext2() {
   if (!read_superblock(&fs.sb)) {
     printf("Error: Failed to read superblock\n");
-    return;
+    return -1;
   }
   if (fs.sb.s_magic != 0xEF53) {
     printf("Error: Not a valid ext2 filesystem (magic: 0x%x)\n", fs.sb.s_magic);
-    return;
+    return -1;
   }
   uint32_t count = (fs.sb.s_blocks_count + fs.sb.s_blocks_per_group - 1) /
                    fs.sb.s_blocks_per_group;
@@ -564,20 +564,21 @@ void mount_ext2() {
   for (uint32_t i = 0; i < count; i++) {
     if (!read_groupblock(i, &fs.gdt[i])) {
       printf("Error: Failed to read group block %u\n", i);
-      return;
+      return -1;
     }
   }
 
   if (!read_inode(2, &fs.root_inode)) {
     printf("Error: Failed to read root inode\n");
-    return;
+    return -1;
   }
 
   printf("Mounted ext2 filesystem: succefully\n");
+  return 1;
 }
 
-void init_ext2() {
-  mount_ext2();
+int init_ext2() {
+  return mount_ext2();
   // TODO: create the standard files and directories architecture here
 }
 

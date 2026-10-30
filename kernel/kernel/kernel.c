@@ -11,6 +11,8 @@
 #include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   cli();
@@ -30,7 +32,8 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   init_shell();
 
   init_drivers(1000);
-  init_fs();
+  if (init_fs() < 0)
+    abort(); // there is no reason for the os to continue without a file system
 
   sti();
 

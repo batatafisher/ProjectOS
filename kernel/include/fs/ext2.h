@@ -166,7 +166,7 @@ _Static_assert(sizeof(ext2_blockgroup) == 32, "Bad group descriptor size");
 
 _Static_assert(sizeof(ext2_inodes) == 128, "Bad inode size");
 
-void init_ext2();
+int init_ext2();
 
 int create_ext2(const char *path);
 int mkdir_ext2(const char *path);

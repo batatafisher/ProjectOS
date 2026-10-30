@@ -36,7 +36,7 @@ void init_pit(uint16_t hz) {
   outb(PIT_CHANNEL0, (devisor >> 8) & 0xFF);
 }
 
-static uint64_t tick = 0;
+volatile static uint64_t tick = 0;
 
 void pit_handler() { tick++; }
 
@@ -44,6 +44,6 @@ void sleep(uint32_t ms) {
   uint64_t target = tick + (ms * pit_hz) / 1000;
 
   while (tick < target) {
-    __asm__ volatile("hlt");
+    hlt();
   }
 }

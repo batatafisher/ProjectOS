@@ -73,11 +73,11 @@ void *kmalloc(size_t heap_size) {
           heap_block->next = new_heap_block;
           heap_block->size = size;
           heap_block->type = 1;
-          used_size += size;
+          used_size += heap_block->size;
           return (void *)(heap_block + 1);
         }
         heap_block->type = 1;
-        used_size += size;
+        used_size += heap_block->size;
         return (void *)(heap_block + 1);
       } else {
         if (previous_block !=

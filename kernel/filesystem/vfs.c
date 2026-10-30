@@ -16,7 +16,7 @@ typedef struct {
   int (*close)(int fd);
   int (*stat)(const char *path);
 
-  void (*init_fs)();
+  int (*init_fs)();
 } vfs_driver_t;
 
 vfs_driver_t ext2 = {.create = create_ext2,
@@ -44,8 +44,7 @@ int init_fs() {
   if (!active_fs || !active_fs->init_fs)
     return ERROR_FILESYSTEM;
 
-  active_fs->init_fs();
-  return 0;
+  return active_fs->init_fs();
 }
 
 int create(const char *path) {

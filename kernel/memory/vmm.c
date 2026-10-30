@@ -1,4 +1,6 @@
 #include <kernel/mmu.h>
+#include <kernel/panic.h>
+#include <stdint.h>
 
 void *get_physaddr(void *virtualaddr) {
   unsigned long pdindex = (unsigned long)virtualaddr >> 22;
@@ -26,8 +28,10 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
   unsigned long *pd = (unsigned long *)0xFFFFF000;
 
   if (!(pd[pdindex] & 0x01)) {
-    pd[pdindex] =
-        ((unsigned long)pmm_alloc_page()) | (flags & 0xFFF) | 0x01; // Present
+    uint64_t *pmm_page = pmm_alloc_page();
+    if (pmm_page == NULL)
+      kerror("out of memory!!");
+    pd[pdindex] = ((unsigned long)pmm_page) | (flags & 0xFFF) | 0x01; // Present
     unsigned long *pt = ((unsigned long *)0xFFC00000) + (0x400 * pdindex);
     for (int i = 0; i < 1024; i++) {
       pt[i] = 0; // Initialize the new page table entry to 0

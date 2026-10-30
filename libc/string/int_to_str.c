@@ -2,6 +2,7 @@
 
 void int_to_str(int value, char *str) {
   char temp[12];
+  int negative = 0;
   int i = 0;
   int j = 0;
 
@@ -11,10 +12,18 @@ void int_to_str(int value, char *str) {
     return;
   }
 
+  if (value < 0) {
+    negative = 1;
+    value *= -1;
+  }
+
   while (value > 0) {
     temp[i++] = '0' + (value % 10);
     value /= 10;
   }
+
+  if (negative)
+    str[j++] = '-';
 
   while (i > 0) {
     str[j++] = temp[--i];

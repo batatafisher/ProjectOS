@@ -9,7 +9,7 @@ void shell_buffer(char c);
 void init_shell();
 void run_shell();
 
-int shell_set_cwd(const char *path);
+int shell_set_cwd(char *path);
 const char *shell_get_cwd(void);
 char *get_full_path(const char *path);
 

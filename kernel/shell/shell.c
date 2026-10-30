@@ -1,10 +1,12 @@
 #include "commands/commands.h"
 #include <input/keyboard.h>
 #include <kernel/asmutils.h>
+#include <kernel/panic.h>
 #include <kernel/shell.h>
 #include <kernel/tty.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define INIT_BUFFER_SIZE 128
@@ -54,20 +56,57 @@ int num_commands = sizeof(command_registry) / sizeof(shell_command_t);
 
 const char *shell_get_cwd(void) { return current_directory; }
 
-int shell_set_cwd(const char *path) {
+void normalize_path(char *path) {
+  const char *in = path;
+  char *out = path;
+  *out++ = '/';
+
+  while (*in) {
+    while (*in == '/')
+      in++;
+    const char *start = in;
+    while (*in && *in != '/')
+      in++;
+    size_t len = (size_t)(in - start);
+    if (len == 0)
+      break;
+
+    if (len == 1 && start[0] == '.')
+      continue;
+
+    if (len == 2 && start[0] == '.' && start[1] == '.') {
+      while (out > path + 1 && out[-1] != '/')
+        out--;
+      if (out > path + 1)
+        out--;
+      continue;
+    }
+
+    if (out > path + 1)
+      *out++ = '/';
+    memmove(out, start, len);
+    out += len;
+  }
+  *out = '\0';
+}
+
+int shell_set_cwd(char *path) {
   size_t len = strlen(path);
 
-  if (len >= CD_PATH_MAX)
+  if (len + 1 >= CD_PATH_MAX)
     return -1;
 
   memcpy(current_directory, path, len + 1);
-  // TODO: the path needs to be normalized (/etc/.. should be /)
+  normalize_path(current_directory);
   return 0;
 }
 
 void clear_shell_buffer() {
   kfree(buffer);
   buffer = kmalloc(sizeof(char) * INIT_BUFFER_SIZE);
+  if (buffer == NULL) {
+    abort();
+  }
   buffer_size = INIT_BUFFER_SIZE;
   buffer[0] = '\0';
   buffer_len = 0;
@@ -159,6 +198,8 @@ void shell_buffer(char c) {
     if (buffer_len + 1 >= buffer_size) {
       buffer_size += BUFFER_ADDITION_COUNT;
       buffer = krealloc(buffer, buffer_size);
+      if (buffer == NULL)
+        abort();
     }
     buffer[buffer_len++] = c;
     buffer[buffer_len] = '\0';

@@ -10,7 +10,7 @@ void heap(char *args[], int argc) {
       if (strcmp("info", args[0]) == 0) {
         size_t used_size = get_heap_size_u();
         int pages_used = get_pages_u();
-        printf("used size = %d", used_size);
+        printf("used size = %d\n", used_size);
         printf("pages used = %d", pages_used);
         return;
       } else {
