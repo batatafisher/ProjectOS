@@ -1,3 +1,4 @@
+#include <kernel/asmutils.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -33,6 +34,14 @@ void terminal_initialize(void) {
   }
 }
 
+void vga_cursor_set(uint16_t pos) {
+  outb(0x3D4, 0x0E);
+  outb(0x3D5, (pos >> 8) & 0xFF);
+
+  outb(0x3D4, 0x0F);
+  outb(0x3D5, pos & 0xFF);
+}
+
 void terminal_setcolor(uint8_t color) { terminal_color = color; }
 
 void terminal_putentryat(unsigned char c, uint8_t color, size_t x, size_t y) {
@@ -50,6 +59,7 @@ void clear_terminal() {
   current_text_count = 0;
   terminal_column = 0;
   terminal_row = 0;
+  vga_cursor_set(terminal_row * VGA_WIDTH + terminal_column);
 }
 
 void terminal_scroll() {
@@ -72,6 +82,7 @@ void terminal_putchar(char c) {
     terminal_column = 0;
     if (++terminal_row == VGA_HEIGHT)
       terminal_scroll();
+    vga_cursor_set(terminal_row * VGA_WIDTH + terminal_column);
     return;
   }
   if (c == '\b') {
@@ -86,6 +97,7 @@ void terminal_putchar(char c) {
       terminal_row--;
       terminal_putentryat(' ', terminal_color, terminal_column, terminal_row);
     }
+    vga_cursor_set(terminal_row * VGA_WIDTH + terminal_column);
     return;
   }
   current_text_count++;
@@ -95,4 +107,5 @@ void terminal_putchar(char c) {
     if (++terminal_row == VGA_HEIGHT)
       terminal_scroll();
   }
+  vga_cursor_set(terminal_row * VGA_WIDTH + terminal_column);
 }
