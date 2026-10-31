@@ -14,12 +14,13 @@ void int_to_str(int value, char *str) {
 
   if (value < 0) {
     negative = 1;
-    value *= -1;
   }
 
-  while (value > 0) {
-    temp[i++] = '0' + (value % 10);
-    value /= 10;
+  unsigned int u = negative ? -(unsigned)value : value;
+
+  while (u > 0) {
+    temp[i++] = '0' + (u % 10);
+    u /= 10;
   }
 
   if (negative)

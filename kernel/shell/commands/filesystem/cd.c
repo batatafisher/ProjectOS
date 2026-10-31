@@ -34,7 +34,7 @@ void cd(char *args[], int argc) {
     if (full_path[path_len - 1] == '/')
       shell_set_cwd(full_path);
     else
-      shell_set_cwd(strcat(full_path, "/"));
+      shell_set_cwd(full_path);
 
     printf("ok");
     return;

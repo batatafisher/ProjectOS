@@ -36,7 +36,8 @@ general_fault_handler(interrupt_frame_t *frame) {
 
   printf("EIP (Instruction): 0x%x\n", frame->eip);
   printf("CR2 (Target Addr): 0x%x\n", faulting_address);
-  printf("Error Code:        0x%x\n\n", frame->error_code);
+  printf("Error Code:        0x%x\n", frame->error_code);
+  printf("Interrupt number:  0x%x\n\n", frame->interrupt_number);
 
   printf("System halted.\n");
 

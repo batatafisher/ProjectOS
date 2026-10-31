@@ -4,8 +4,8 @@ isr_stub_%+%1:
     pusha
     push esp
     call exception_handler
-    popa
     add esp, 4
+    popa
     add esp, 8
     iret 
 %endmacro
@@ -17,8 +17,8 @@ isr_stub_%+%1:
     pusha
     push esp
     call exception_handler
-    popa
     add esp, 4
+    popa
     add esp, 8
     iret
 %endmacro

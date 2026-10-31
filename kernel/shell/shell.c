@@ -113,13 +113,13 @@ void clear_shell_buffer() {
   shell_command_ready = 0;
 }
 
-char *get_full_path(const char *path) {
+char *get_full_path(char *path) {
   if (path[0] == '/') {
     if (strlen(path) >= CD_PATH_MAX)
       return "err";
     return path;
   } else {
-    if (strlen(path) + strlen(shell_get_cwd()) >= CD_PATH_MAX)
+    if (strlen(path) + strlen(shell_get_cwd() + 1) >= CD_PATH_MAX)
       return "err";
     static char full_path[CD_PATH_MAX] = "";
     strcpy(full_path, shell_get_cwd());

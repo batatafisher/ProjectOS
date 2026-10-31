@@ -41,6 +41,7 @@ void put(char *args[], int argc) {
       printf("ok");
       return;
     } else {
+      kfree(buffer);
       printf("ERROR: invalid path");
       return;
     }

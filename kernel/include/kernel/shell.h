@@ -11,7 +11,7 @@ void run_shell();
 
 int shell_set_cwd(char *path);
 const char *shell_get_cwd(void);
-char *get_full_path(const char *path);
+char *get_full_path(char *path);
 
 extern volatile int shell_command_ready;
 

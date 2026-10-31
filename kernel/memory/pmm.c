@@ -6,6 +6,7 @@
 static uint32_t bitmap_bytes;
 static uint32_t total_pages;
 static uint8_t *pmm_bitmap;
+static uint32_t bitmap_end_phys;
 
 void init_pmm(multiboot_info_t *multiboot) {
   if (!test_bit(6, (uint8_t *)&multiboot->flags))
@@ -30,7 +31,7 @@ void init_pmm(multiboot_info_t *multiboot) {
   uintptr_t aligned_addr = ((uintptr_t)endkernel + 4095) & ~4095U; // virtual
   pmm_bitmap = (uint8_t *)aligned_addr;
   uint32_t bitmap_start_phys = aligned_addr - 0xC0000000;
-  uint32_t bitmap_end_phys = bitmap_start_phys + bitmap_bytes;
+  bitmap_end_phys = bitmap_start_phys + bitmap_bytes;
 
   for (uint32_t i = 0; i < bitmap_bytes; i++) {
     pmm_bitmap[i] = 0xff;
@@ -53,7 +54,7 @@ void init_pmm(multiboot_info_t *multiboot) {
 
         else if (i * 4096 >= mb_start && i * 4096 < mb_end)
           continue;
-        // TODO: later add whatever we want to reserve her like modules ,
+        // TODO: later add whatever we want to reserve here, like modules ,
         // cmdline etc
         clear_bit(i, pmm_bitmap);
       }
@@ -78,12 +79,14 @@ void *pmm_alloc_page() {
 }
 
 void pmm_free_page(void *physaddr) {
-  if ((uint32_t)physaddr < (uint32_t)&endkernel - 0xC0000000)
+  if ((uint32_t)physaddr < bitmap_end_phys)
     kerror("Attempt to free a page that is allocated by the kernel");
   if ((uint32_t)physaddr % 4096 != 0)
     kerror("Attempt to free a page that is not page-aligned");
   uint32_t page_index = (uint32_t)physaddr / 4096;
   if (page_index >= total_pages)
     kerror("Attempt to a free an out of bound page");
+  if (!test_bit(page_index, pmm_bitmap))
+    kerror("Attempt to free an already free page");
   clear_bit(page_index, pmm_bitmap);
 }

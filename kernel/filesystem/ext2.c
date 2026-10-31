@@ -2,6 +2,7 @@
 #include <fs/ext2.h>
 #include <kernel/klib.h>
 #include <kernel/mmu.h>
+#include <kernel/panic.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -550,26 +551,31 @@ int split_parent_child(const char *path, char *parent_path, char *name,
 
 int mount_ext2() {
   if (!read_superblock(&fs.sb)) {
-    printf("Error: Failed to read superblock\n");
-    return -1;
+    kerror("Error: Failed to read superblock\n");
+    return -1; // this is kind of useless now but its here so if i have a
+               // different way to handle these errors
   }
   if (fs.sb.s_magic != 0xEF53) {
-    printf("Error: Not a valid ext2 filesystem (magic: 0x%x)\n", fs.sb.s_magic);
+    kerror("Error: Not a valid ext2 filesystem (magic: 0x%x)\n", fs.sb.s_magic);
     return -1;
   }
   uint32_t count = (fs.sb.s_blocks_count + fs.sb.s_blocks_per_group - 1) /
                    fs.sb.s_blocks_per_group;
   fs.gdt = kcalloc(count, sizeof(ext2_blockgroup));
+  if (fs.gdt == NULL) {
+    kerror("Error: Failed to allocate space for the group discriptor");
+    return -1;
+  }
 
   for (uint32_t i = 0; i < count; i++) {
     if (!read_groupblock(i, &fs.gdt[i])) {
-      printf("Error: Failed to read group block %u\n", i);
+      kerror("Error: Failed to read group block %u\n", i);
       return -1;
     }
   }
 
   if (!read_inode(2, &fs.root_inode)) {
-    printf("Error: Failed to read root inode\n");
+    kerror("Error: Failed to read root inode\n");
     return -1;
   }
 

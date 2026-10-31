@@ -162,9 +162,29 @@ void kfree(void *ptr) {
 void *krealloc(void *ptr, size_t size) {
   if (!ptr)
     return kmalloc(size);
+  if (size == 0) {
+    kfree(ptr);
+    return NULL;
+  }
 
   heap_block_t *heap_block = (heap_block_t *)ptr - 1;
-  if (size <= heap_block->size) {
+  size_t new_size = round2(ALIGNMENT, size);
+
+  if (heap_block->size >= new_size + sizeof(heap_block_t) +
+                              ALIGNMENT) { // has enough space to slice it
+    uintptr_t address =
+        (uintptr_t)((uint8_t *)heap_block + sizeof(heap_block_t) + new_size);
+    size_t prevous_size = heap_block->size;
+    heap_block_t *new_heap_block = (heap_block_t *)address;
+    new_heap_block->size = heap_block->size - new_size - sizeof(heap_block_t);
+    new_heap_block->type = 0;
+    new_heap_block->next = heap_block->next;
+    heap_block->next = new_heap_block;
+    heap_block->size = new_size;
+    heap_block->type = 1;
+    used_size -= prevous_size - heap_block->size;
+    return (void *)(heap_block + 1);
+  } else if (new_size <= heap_block->size) {
     return ptr;
   }
 

@@ -19,9 +19,11 @@
 .section .bss
 .align 16
 stack_bottom:
-.skip 16384 # 16 KiB
+.skip 65536 # 64 KiB
 stack_top:
 
+# And the page tables in the data section 
+.section .data
 .align 4096
 page_directory:
     .space 4096
@@ -83,23 +85,34 @@ _start:
   jmp *%eax
 
 higher_half:
-  movl $stack_top, %esp
+    movl $stack_top, %esp
 
+    # Preserve Multiboot magic (%edi) in %ebx before rep stosl overwrites %edi.
+    movl %edi, %ebx
 
-  movl $0, page_directory + 0
-  movl %cr3, %eax
-  movl %eax, %cr3
+    # Zero out .bss section
+    movl $sbss, %edi
+    movl $ebss, %ecx
+    subl %edi, %ecx
+    shrl $2, %ecx
 
-  pushl %esi
-  pushl %edi
+    xorl %eax, %eax
+    cld
+    rep stosl
 
-	# Call the global constructors.
-	call _init
+    movl $0, page_directory + 0
+    movl %cr3, %eax
+    movl %eax, %cr3
 
-	# Transfer control to the main kernel.
-	call kernel_main
+    # Call global constructors
+    call _init
 
-	cli
-5:	hlt
-	jmp 5b
-.size _start, . - _start
+    pushl %esi   # 2nd argument: Multiboot Info structure pointer
+    pushl %ebx   # 1st argument: Multiboot Magic Number (0x2BADB002)
+
+    # Transfer control to the main kernel
+    call kernel_main
+
+    cli
+5:  hlt
+    jmp 5b
