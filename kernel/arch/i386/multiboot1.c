@@ -1,9 +1,10 @@
+#include <arch/i386/arch.h>
 #include <arch/i386/multiboot1.h>
 #include <kernel/klib.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#define kernel_P2V(p) ((void *)((uint32_t)(p) + 0xC0000000))
+#define kernel_P2V(p) ((void *)((uint32_t)(p) + KERNEL_VMA))
 
 multiboot_info_t *init_multiboot1(uint32_t magic, uint32_t mbi_phys) {
   multiboot_info_t *mbi = kernel_P2V(mbi_phys);

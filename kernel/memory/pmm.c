@@ -1,3 +1,4 @@
+#include <arch/i386/arch.h>
 #include <kernel/klib.h>
 #include <kernel/mmu.h>
 #include <kernel/panic.h>
@@ -18,7 +19,7 @@ void init_pmm(multiboot_info_t *multiboot) {
 
   while ((mmap_addr - start_addr) < mmap_length) {
     multiboot_mmap_entry_t *mmap_entry =
-        ((void *)((uint32_t)(mmap_addr) + 0xC0000000));
+        ((void *)((uint32_t)(mmap_addr) + KERNEL_VMA));
     if (mmap_entry->type == 1 &&
         mmap_entry->addr + mmap_entry->len > highest_addr)
       highest_addr = mmap_entry->addr + mmap_entry->len;
@@ -26,11 +27,12 @@ void init_pmm(multiboot_info_t *multiboot) {
   }
   if (highest_addr > 0xffffffff)
     highest_addr = 0xffffffff;
-  total_pages = highest_addr / 4096;
+  total_pages = highest_addr / PAGE_SIZE;
   bitmap_bytes = (total_pages + 7) / 8;
-  uintptr_t aligned_addr = ((uintptr_t)endkernel + 4095) & ~4095U; // virtual
+  uintptr_t aligned_addr = ((uintptr_t)endkernel + PAGE_SIZE - 1) &
+                           ~(unsigned)(PAGE_SIZE - 1); // virtual
   pmm_bitmap = (uint8_t *)aligned_addr;
-  uint32_t bitmap_start_phys = aligned_addr - 0xC0000000;
+  uint32_t bitmap_start_phys = aligned_addr - KERNEL_VMA;
   bitmap_end_phys = bitmap_start_phys + bitmap_bytes;
 
   for (uint32_t i = 0; i < bitmap_bytes; i++) {
@@ -40,19 +42,22 @@ void init_pmm(multiboot_info_t *multiboot) {
   mmap_addr = start_addr;
   while ((mmap_addr - start_addr) < mmap_length) {
     multiboot_mmap_entry_t *mmap_entry =
-        ((void *)((uint32_t)(mmap_addr) + 0xC0000000));
+        ((void *)((uint32_t)(mmap_addr) + KERNEL_VMA));
     if (mmap_entry->type == 1) {
-      uint64_t start = (mmap_entry->addr + 4095) & ~4095ULL; // round start UP
-      uint64_t end =
-          (mmap_entry->addr + mmap_entry->len) & ~4095ULL; // round end DOWN
-      uint64_t mb_start = (uint64_t)get_physaddr(multiboot) & ~4095ULL;
+      uint64_t start = (mmap_entry->addr + PAGE_SIZE - 1) &
+                       ~(uint64_t)(PAGE_SIZE - 1); // round start UP
+      uint64_t end = (mmap_entry->addr + mmap_entry->len) &
+                     ~(uint64_t)(PAGE_SIZE - 1); // round end DOWN
+      uint64_t mb_start =
+          (uint64_t)get_physaddr(multiboot) & ~(uint64_t)(PAGE_SIZE - 1);
       uint64_t mb_end =
           (uint64_t)get_physaddr(multiboot) + sizeof(multiboot_info_t);
-      for (uint64_t i = start / 4096; i < end / 4096 && i < total_pages; i++) {
-        if (i * 4096 < bitmap_end_phys)
+      for (uint64_t i = start / PAGE_SIZE;
+           i < end / PAGE_SIZE && i < total_pages; i++) {
+        if (i * PAGE_SIZE < bitmap_end_phys)
           continue;
 
-        else if (i * 4096 >= mb_start && i * 4096 < mb_end)
+        else if (i * PAGE_SIZE >= mb_start && i * PAGE_SIZE < mb_end)
           continue;
         // TODO: later add whatever we want to reserve here, like modules ,
         // cmdline etc
@@ -69,9 +74,9 @@ void *pmm_alloc_page() {
     if (pmm_bitmap[i] == 0xFF)
       continue;
     for (uint32_t j = 0; j < 8; j++) {
-      if (!(pmm_bitmap[i] & (1 << j))) {       // page is free
-        pmm_bitmap[i] |= (1 << j);             // mark page as used
-        return (void *)(((i * 8) + j) * 4096); // return physical address
+      if (!(pmm_bitmap[i] & (1 << j))) {            // page is free
+        pmm_bitmap[i] |= (1 << j);                  // mark page as used
+        return (void *)(((i * 8) + j) * PAGE_SIZE); // return physical address
       }
     }
   }
@@ -81,9 +86,9 @@ void *pmm_alloc_page() {
 void pmm_free_page(void *physaddr) {
   if ((uint32_t)physaddr < bitmap_end_phys)
     kerror("Attempt to free a page that is allocated by the kernel");
-  if ((uint32_t)physaddr % 4096 != 0)
+  if ((uint32_t)physaddr % PAGE_SIZE != 0)
     kerror("Attempt to free a page that is not page-aligned");
-  uint32_t page_index = (uint32_t)physaddr / 4096;
+  uint32_t page_index = (uint32_t)physaddr / PAGE_SIZE;
   if (page_index >= total_pages)
     kerror("Attempt to a free an out of bound page");
   if (!test_bit(page_index, pmm_bitmap))

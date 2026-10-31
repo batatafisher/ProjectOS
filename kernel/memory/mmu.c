@@ -1,3 +1,4 @@
+#include <arch/i386/arch.h>
 #include <kernel/klib.h>
 #include <kernel/mmu.h>
 #include <kernel/panic.h>
@@ -5,8 +6,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#define KHEAP_START 0xD0000000
-#define PAGE_SIZE 4096
 #define PAGE_FLAGS 0x2 // the vmm automatically adds the 0x1 (present) flag
 
 static int current_heap_pages;
