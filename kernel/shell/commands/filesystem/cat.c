@@ -9,6 +9,7 @@ void cat(char *args[], int argc) {
   if (argc == 1) {
     char *path = args[0];
     int bytes_count;
+
     static uint8_t buffer[1024];
     char *full_path = get_full_path(path);
     if (strcmp(full_path, "err") == 0) {

@@ -7,13 +7,16 @@ CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
 
+CWFALGS?=-Wall -Wextra -Wformat=2 -Wshadow
+CSSPFLAGS?=-fstack-protector-strong
+
 DESTDIR?=
 PREFIX?=/usr/local
 EXEC_PREFIX?=$(PREFIX)
 INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
 
-CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
+CFLAGS:=$(CFLAGS) $(CSSPFALGS) -ffreestanding $(CWFALGS)
 CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude
 LIBK_CFLAGS:=$(CFLAGS)
 LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk
@@ -34,6 +37,7 @@ stdio/vprintf.o \
 stdio/putchar.o \
 stdio/puts.o \
 stdlib/abort.o \
+stdlib/__stack_check_fail.o \
 string/memcmp.o \
 string/memcpy.o \
 string/memmove.o \

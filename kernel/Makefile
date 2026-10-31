@@ -9,13 +9,16 @@ LDFLAGS?=
 NASMFLAGS?=
 LIBS?=
 
+CWFALGS?=-Wall -Wextra -Wformat=2 -Wshadow
+CSSPFLAGS?=-fstack-protector-strong
+
 DESTDIR?=
 PREFIX?=/usr/local
 EXEC_PREFIX?=$(PREFIX)
 BOOTDIR?=$(EXEC_PREFIX)/boot
 INCLUDEDIR?=$(PREFIX)/include
 
-CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra -Wformat=2 -Wshadow
+CFLAGS:=$(CFLAGS) $(CWFLAGS) $(CSSPFLAGS) -ffreestanding 
 CPPFLAGS:=$(CPPFLAGS) -D__is_kernel -Iinclude
 LDFLAGS:=$(LDFLAGS)
 NASMFLAGS:=$(NASMFLAGS) -f elf32
