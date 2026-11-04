@@ -42,9 +42,11 @@ void map_page(void *physaddr, void *virtualaddr, unsigned int flags) {
 
   unsigned long *pt = PT_VADDR(pdindex);
 
-  if (pt[ptindex] & 0x01) {
+  if (pt[ptindex] & 0x01)
     return; // return if it already mapped for now
-  }
+
+  if (physaddr == NULL)
+    kerror("tried to map a NULL physical address");
 
   pt[ptindex] =
       ((unsigned long)physaddr) | (flags & (PAGE_SIZE - 1)) | 0x01; // Present

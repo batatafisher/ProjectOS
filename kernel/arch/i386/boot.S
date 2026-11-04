@@ -56,25 +56,41 @@ _start:
   movl $0, %eax # eax = table index (0 to 3)
   
   2:
+    # ecx = page_tables_phys + (eax * 4096) | Present | Read/Write
     movl %eax, %ecx
     imull $4096, %ecx
     addl $(page_tables - OFFSET), %ecx
-    orl $3, %ecx # Present + Read/Write
-    
-    # Identity Map (Slots 0 to 3)
-    movl %ecx, (page_directory - OFFSET)(,%eax,4)
-    # Higher Half Map (Slots 768 to 771 -> 768 * 4 = 3072)
+    orl $3, %ecx
+
+    # Slot index offset = 768 * 4 = 3072
     movl %ecx, (page_directory - OFFSET + 3072)(,%eax,4)
-    
-    incl %eax
+
+    # Identity Map ONLY for the first 4 slots (0 to 3 -> lower 16MB)
     cmpl $4, %eax
+    jge 3f
+    movl %ecx, (page_directory - OFFSET)(,%eax,4)
+
+  3:
+    incl %eax
+    cmpl $256, %eax
     jne 2b
+
+    # Overwrite slot 1023 with recursive mapping
+    movl $(page_directory - OFFSET), %eax
+    orl $3, %eax
+    movl %eax, (page_directory - OFFSET + 1023*4)
+
+    # Load CR3 and enable paging
+    movl $(page_directory - OFFSET), %eax
+    movl %eax, %cr3
     
-  # Recursive mapping and cr3 load
+  # recursive mapping and cr3 load 
   movl $(page_directory - OFFSET), %eax
-  movl %eax, %cr3
   orl $3, %eax 
   movl %eax, (page_directory - OFFSET) + 1023*4
+
+  movl $(page_directory - OFFSET), %eax
+  movl %eax, %cr3
 
   # Turn on Paging
   movl %cr0, %eax
@@ -101,6 +117,9 @@ higher_half:
     rep stosl
 
     movl $0, page_directory + 0
+    movl $0, page_directory + 4
+    movl $0, page_directory + 8
+    movl $0, page_directory + 12
     movl %cr3, %eax
     movl %eax, %cr3
 
