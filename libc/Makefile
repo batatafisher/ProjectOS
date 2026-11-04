@@ -7,7 +7,7 @@ CPPFLAGS?=
 LDFLAGS?=
 LIBS?=
 
-CWFALGS?=-Wall -Wextra -Wformat=2 -Wshadow
+CWFLAGS?=-Wall -Wextra -Wformat=2 -Wshadow
 CSSPFLAGS?=-fstack-protector-strong
 
 DESTDIR?=
@@ -16,7 +16,7 @@ EXEC_PREFIX?=$(PREFIX)
 INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
 
-CFLAGS:=$(CFLAGS) $(CSSPFALGS) -ffreestanding $(CWFALGS)
+CFLAGS:=$(CFLAGS) $(CSSPFLAGS) -ffreestanding $(CWFLAGS)
 CPPFLAGS:=$(CPPFLAGS) -D__is_libc -Iinclude
 LIBK_CFLAGS:=$(CFLAGS)
 LIBK_CPPFLAGS:=$(CPPFLAGS) -D__is_libk

@@ -9,7 +9,7 @@ LDFLAGS?=
 NASMFLAGS?=
 LIBS?=
 
-CWFALGS?=-Wall -Wextra -Wformat=2 -Wshadow
+CWFLAGS?=-Wall -Wextra -Wformat=2 -Wshadow
 CSSPFLAGS?=-fstack-protector-strong
 
 DESTDIR?=

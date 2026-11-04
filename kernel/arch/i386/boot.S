@@ -28,7 +28,7 @@ stack_top:
 page_directory:
     .space 4096
 page_tables:
-    .space 16384 # 4 contiguous page tables (4 * 4096) for 16MB
+    .space 1048576 # 256 contiguous page tables (256 * 4096)
 
 # The kernel entry point.
 .section .text
