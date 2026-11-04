@@ -28,7 +28,7 @@ stack_top:
 page_directory:
     .space 4096
 page_tables:
-    .space 1048576 # 256 contiguous page tables (256 * 4096)
+    .space 1044480 # 255 contiguous page tables (255 * 4096)
 
 # The kernel entry point.
 .section .text
@@ -49,14 +49,12 @@ _start:
     movl %ecx, (page_tables - OFFSET)(,%eax,4)
     incl %eax
     addl $4096, %ebx
-    cmpl $4096, %eax # 4096 * 4KB = 16MB
+    cmpl $4096, %eax
     jne 1b
 
-  # Link all 4 tables into the Page Directory
-  movl $0, %eax # eax = table index (0 to 3)
+  movl $0, %eax
   
   2:
-    # ecx = page_tables_phys + (eax * 4096) | Present | Read/Write
     movl %eax, %ecx
     imull $4096, %ecx
     addl $(page_tables - OFFSET), %ecx
@@ -72,7 +70,7 @@ _start:
 
   3:
     incl %eax
-    cmpl $256, %eax
+    cmpl $255, %eax
     jne 2b
 
     # Overwrite slot 1023 with recursive mapping
@@ -83,18 +81,11 @@ _start:
     # Load CR3 and enable paging
     movl $(page_directory - OFFSET), %eax
     movl %eax, %cr3
-    
-  # recursive mapping and cr3 load 
-  movl $(page_directory - OFFSET), %eax
-  orl $3, %eax 
-  movl %eax, (page_directory - OFFSET) + 1023*4
 
-  movl $(page_directory - OFFSET), %eax
-  movl %eax, %cr3
 
   # Turn on Paging
   movl %cr0, %eax
-  orl $0x80000001, %eax
+  orl $0x80010001, %eax
   movl %eax, %cr0 
 
   lea higher_half, %eax

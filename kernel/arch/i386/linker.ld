@@ -16,13 +16,17 @@ SECTIONS
     .text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
     {
         *(.multiboot)
-        *(.text)
+        text_start = .;
+        *(.text .text.*)
+        text_end = .;
     }
 
     /* Read-only data. */
     .rodata ALIGN(4K) : AT(ADDR(.rodata) - 0xC0000000)
     {
-        *(.rodata)
+      rodata_start = .;
+      *(.rodata .rodata.*)
+      rodata_end = .;
     }
 
     /* Read-write data (initialized) */

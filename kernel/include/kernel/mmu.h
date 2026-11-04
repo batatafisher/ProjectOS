@@ -19,6 +19,7 @@ heap_block {   // describes the availebility of each block in a
 
 void *get_physaddr(void *virtualaddr);
 void init_pmm(multiboot_info_t *multiboot);
+void init_vmm();
 void pmm_free_page(void *physaddr);
 void *pmm_alloc_page();
 void map_page(void *physaddr, void *virtualaddr, unsigned int flags);

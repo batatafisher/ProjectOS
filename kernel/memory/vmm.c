@@ -1,7 +1,26 @@
 #include "arch/i386/arch.h"
+#include <kernel/asmutils.h>
 #include <kernel/mmu.h>
 #include <kernel/panic.h>
 #include <stdint.h>
+
+extern char text_start[], text_end[], rodata_start[], rodata_end[];
+
+static void ro_protect_range(unsigned long a, unsigned long b) {
+  for (a &= ~(unsigned long)(PAGE_SIZE - 1); a < b; a += PAGE_SIZE) {
+    unsigned long *pt = PT_VADDR(a >> 22);
+    pt[(a >> 12) & RECURSIVE_SLOT] &= ~0x2; // Clear the writable bit
+    flush_tlb_single(a);
+  }
+}
+
+void init_vmm() {
+  ro_protect_range((unsigned long)text_start, (unsigned long)text_end);
+  ro_protect_range((unsigned long)rodata_start, (unsigned long)rodata_end);
+  unsigned long cr0;
+  __asm__ volatile("mov %%cr0, %0" : "=r"(cr0));
+  __asm__ volatile("mov %0, %%cr0" : : "r"(cr0 | 0x10000)); // Enable WP bit
+}
 
 void *get_physaddr(void *virtualaddr) {
   unsigned long pdindex = (unsigned long)virtualaddr >> 22;

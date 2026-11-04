@@ -25,7 +25,7 @@ void kernel_main(uint32_t magic, uint32_t mbi_phys) {
   if (mbi == NULL) {
     kerror("bad multiboot info");
   }
-
+  init_vmm();
   init_pmm(mbi);
   init_heap();
 
